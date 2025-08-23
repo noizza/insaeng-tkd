@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mi Cuenta</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<style>
+		.clipgup {
+			display: inline-block;
+			padding: 0.3rem 0.8rem;
+			font-size: 0.9rem;
+			font-weight: bold;
+			color: #fff;
+			background: #333;
+			border: 2px solid #333;
+			clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+		}
+		.clipgup-cint {
+			font-size: 0.9rem;
+			padding: 0.3em 5.8em;
+			clip-path: polygon(3% 0%, 100% 0%, 97% 100%, 0% 100%);
+		}
+	</style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+	<!-- NAVBAR -->
+	<header class="bg-slate-50 text-black p-1 flex justify-between items-center shadow-md">
+		<div class="flex items-center space-x-2">
+			<img src="imgs/logo_whitea.png" alt="Logo" class="h-8 sm:h-20 md:h-25 w-auto">
+			<h1 class="text-black text-xl font-bold">INSAENG</h1>
+		</div>
+		<nav id="navbar" class="flex space-x-4">
+			<a href="index.html" class="px-2 py-1 rounded hover:bg-cyan-950 hover:text-white transition-colors">Inicio</a>
+			<a href="cuenta.html" class="px-2 py-1 rounded bg-cyan-950 text-white">Cuenta</a>
+			<a href="#" id="logoutBtn" class="px-2 py-1 rounded hover:bg-red-600 hover:text-white transition-colors">Logout</a>
+		</nav>
+	</header>
+
+	<!-- INFORMACIÓN DEL USUARIO -->
+	<section class="p-6 max-w-5xl mx-auto bg-gray-200 rounded-2xl">
+		<h2 class="text-2xl font-bold mb-6">Mi Cuenta</h2>
+		<div class="flex items-center gap-6 mb-6">
+			<img id="userProfileImg" src="https://i.postimg.cc/v8LP9H67/logo-white-removebg-preview.png" 
+				alt="Foto del alumno" 
+				class="w-24 h-24 rounded-full border-2 border-gray-200">
+			<span id="xuserName" class="text-xl font-semibold">Juan Perez</span>
+		</div>
+		<div id="userInfo" class="mb-6"></div>
+		<div class="flex items-center justify-between mb-2">
+			<button id="prevLibreta" class="px-2 py-1 bg-gray-400 text-white rounded hover:bg-gray-600">⬅️</button>
+			<span id="libretaCategoria" class="font-semibold text-lg">Libreta actual</span>
+			<button id="nextLibreta" class="px-2 py-1 bg-gray-400 text-white rounded hover:bg-gray-600">➡️</button>
+		</div>
+		<div id="libretaContainer" class="mt-6"></div>
+	</section>
+
+<script>
+	const token = localStorage.getItem("token");
+
+	if(!token) {
+		alert("Debes iniciar sesión para acceder a esta página.");
+		window.location.href = "index.html";
+	}
+
+	document.getElementById("logoutBtn").addEventListener("click", () => {
+		localStorage.removeItem("token");
+		window.location.href = "index.html";
+	});
+
+async function loadUserPage() {
+	const payload = JSON.parse(atob(token.split('.')[1]));
+
+	// Mostrar info de usuario
+	document.getElementById("xuserName").textContent = payload.nombre;
+	try {
+		const resInfo = await fetch("/user/info", {
+			headers: { "Authorization": "Bearer " + token }
+		});
+		let superiorNombre = "Sin superior", rolNombre = "Rol desconocido", profileImg = "https://i.postimg.cc/v8LP9H67/logo-white-removebg-preview.png";
+
+		if(resInfo.ok) {
+			const data = await resInfo.json();
+			superiorNombre = data.superiorNombre;
+			rolNombre = data.rolNombre;
+			if(data.url_fotop && data.url_fotop !== "") {
+				profileImg = data.url_fotop;
+			}
+		}
+
+		document.getElementById("userProfileImg").src = profileImg;
+		document.getElementById("userInfo").innerHTML = `
+			<p><strong>Superior: </strong> ${superiorNombre}</p>
+			<p><strong>Rol actual: </strong> ${rolNombre}</p>`;
+
+	} catch(err) {
+		console.error("Error al obtener info:", err);
+		document.getElementById("userInfo").innerHTML = `
+			<p><strong>Superior: </strong> Sin datos</p>
+			<p><strong>Rol actual: </strong> Desconocido</p>
+		`;
+	}
+
+
+	// Cargar notas
+	try {
+		const res = await fetch("/user/grades", {
+			headers: { "Authorization": "Bearer " + token } });
+		if(!res.ok) throw new Error("Error al cargar las notas");
+		const { notas } = await res.json();
+
+        // --- AQUÍ EMPIEZA EL BLOQUE NUEVO ---
+        let libretas = notas.sort((a,b) => b.categoria - a.categoria); // Orden descendente
+        let libretaIndex = 0; // 0 = libreta más reciente
+		const rolPorCategoria = {
+			1: "IX GUP - CINTURON BLANCO PUNTA AMARILLA",
+			2: "VIII GUP - CINTURON AMARILLO",
+			3: "VII GUP - CINTURON AMARILLO PUNTA VERDE",
+			4: "VI GUP - CINTURON VERDE",
+			5: "V GUP - CINTURON VERDE PUNTA AZUL",
+			6: "IV GUP - CINTURON AZUL",
+			7: "III GUP - CINTURON AZUL PUNTA ROJA",
+			8: "II GUP - CINTURON ROJO",
+			9: "I GUP - CINTURON ROJO PUNTA NEGRA",
+			10: "I DAN",
+			11: "II DAN",
+			12: "III DAN",
+			13: "IV DAN",
+			14: "V DAN",
+			15: "VI DAN",
+			16: "VII DAN",
+			17: "VIII DAN",
+			18: "IX DAN"
+		};
+        function renderLibreta() {
+            const n = libretas[libretaIndex];
+            const rolNombreCategoria = rolPorCategoria[n.categoria] || `Categoría ${n.categoria}`;
+			document.getElementById("libretaCategoria").textContent = `Libreta: ${rolNombreCategoria}`;
+
+            
+            let html = `<div class="overflow-x-auto">
+            <table class="min-w-full border-collapse text-left">
+                <thead>
+                    <tr>
+                        <th class="border px-2 py-1"></th>
+                        <th class="bg-gray-400 border px-2 py-1">NAOP</th>
+                        <th class="bg-gray-400 border px-2 py-1">AOP</th>
+                        <th class="bg-gray-400 border px-2 py-1">SOP</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            const materias = {
+                desarrollo_tecnico: "DESARROLLO",
+                tul: "TUL",
+                lucha: "1/2 LUCHA",
+                combate: "COMBATE",
+                rotura: "ROTURA",
+                zafes_palancas_lances_caidas: "ZAFES/PALANCAS/LANCES/CAIDAS",
+                enfrentamientos: "ENFRENTAMIENTOS",
+                movimientos_fundamentales: "MOVIMIENTOS FUNDAMENTALES",
+                teoria: "TEORÍA",
+                actitud_marcial: "ACTITUD MARCIAL"
+            };
+
+            Object.keys(materias).forEach(columnaDB => {
+                const valor = n[columnaDB]; 
+                html += `<tr class="hover:bg-gray-300">
+                    <td class="border px-4 py-2 font-semibold">${materias[columnaDB]}</td>
+                    <td class="border px-4 py-2 text-center">${valor===0 ? "✔️" : "-"}</td>
+                    <td class="border px-4 py-2 text-center">${valor===1 ? "✔️" : "-"}</td>
+                    <td class="border px-4 py-2 text-center">${valor===2 ? "✔️" : "-"}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            document.getElementById("libretaContainer").innerHTML = html;
+        }
+
+        // Inicializamos
+        renderLibreta();
+
+        // Botones para cambiar libreta
+        document.getElementById("prevLibreta").addEventListener("click", () => {
+            if(libretaIndex < libretas.length - 1) {
+                libretaIndex++;
+                renderLibreta();
+            }
+        });
+
+        document.getElementById("nextLibreta").addEventListener("click", () => {
+            if(libretaIndex > 0) {
+                libretaIndex--;
+                renderLibreta();
+            }
+        });
+        // --- AQUÍ TERMINA BLOQUE NUEVO ---
+
+    } catch(err) {
+        document.getElementById("libretaContainer").innerHTML = `<p class="text-red-600">No se pudieron cargar las notas.</p>`;
+        console.error(err);
+    }
+}
+loadUserPage();
+</script>
+
+</body>
+</html>

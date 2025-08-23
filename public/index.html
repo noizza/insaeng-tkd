@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mi Web</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+<style>
+	/* Efecto neón amarillo desde los bordes para noticias importantes */
+	.news-card {
+		border-radius: 1rem;
+		overflow: hidden;
+		transform: scale(1);
+		transition: transform 0.3s; 
+	}
+	.news-card.importante {
+		position: relative;
+	}
+	.news-card.importante::before {
+		content: "";
+		position: absolute;
+		top: 0; left: 0; right: 0; bottom: 0;
+		border-radius: 1rem;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.3s;
+		box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8) inset;
+	}
+	.news-card.importante:hover::before {
+		opacity: 1;
+	}
+	.news-card:hover {
+		transform: scale(1.05);
+		z-index: 10;
+	}
+</style>
+</head>
+<body class="bg-gray-200 dark:bg-gray-200 text-gray-900 dark:text-gray-900">
+
+	<!-- NAVBAR -->
+	<header class="bg-slate-50 text-white p-1 flex justify-between items-center shadow-md">
+		<div class="flex items-center space-x-2">
+			<img src="imgs/logo_whitea.png" alt="Logo" class="h-8 sm:h-20 md:h-25 w-auto">
+			<h1 class="text-black text-xl font-bold">INSAENG</h1>
+		</div>
+		<nav id="navbar" class="flex space-x-4 text-black px-4">
+			<a href="#inicio" class="px-2 py-1 rounded hover:bg-cyan-950 hover:text-white hover:no-underline transition-colors">Inicio</a>
+			<a href="cuenta.html" class="px-2 py-1 rounded hover:bg-cyan-950 hover:text-white hover:no-underline transition-colors">Cuenta</a>
+			<a href="#" id="navLoginBtn" class="px-2 py-1 rounded hover:bg-cyan-950 hover:text-white hover:no-underline transition-colors">Login</a>
+		</nav>
+	</header>
+
+	<!-- PRESENTACIÓN -->
+	<section id="inicio" class="p-6 text-center max-w-4xl mx-auto">
+		<h2 class="text-3xl md:text-4xl font-extrabold mb-4">Escuela de Taekwondo-INSAENG</h2>
+		<p class="text-lg md:text-xl leading-relaxed">
+			Este texto no se que poner acá, ya se me va a ocurrir algo.
+		</p>
+	</section>
+
+	<!-- NOTICIAS -->
+	<section id="noticias" class="p-6">
+		<h2 class="text-2xl font-bold mb-4 text-center">Noticias</h2>
+		<div id="newsContainer" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"></div>
+	</section>
+
+	<!-- LOGIN FLOTANTE -->
+	<div id="loginModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
+		<div class="bg-white dark:bg-gray-300 p-6 rounded-2xl shadow-md w-96 relative">
+			<button onclick="closeLogin()" class="absolute top-2 right-2 text-gray-700 dark:text-gray-900 font-bold">&times;</button>
+			<h2 class="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
+			<form id="loginForm" class="space-y-4">
+				<label class="block">Email</label>
+				<input type="email" name="email" required class="w-full p-2 border rounded dark:bg-gray-400">
+				<label class="block">Contraseña</label>
+				<input type="password" name="password" required class="w-full p-2 border rounded dark:bg-gray-400">
+				<button type="submit" class="w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-400">Ingresar</button>
+				<p id="loginMsg" class="text-center mt-3 text-sm"></p>
+			</form>
+		</div>
+	</div>
+	<!-- MODAL DE NOTICIA -->
+	<div id="newsModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
+		<div class="bg-white dark:bg-gray-400 rounded-2xl shadow-md w-1/2 p-6 relative max-h-[80vh] overflow-auto">
+			<button onclick="closeNewsModal()" class="absolute top-4 right-4 text-gray-700 dark:text-gray-200 font-bold text-2xl hover:text-red-600">&times;</button>
+			<h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
+			<img id="modalImage" class="w-full h-64 object-cover rounded mb-4" alt="Noticia">
+			<p id="modalText" class="text-base"></p>
+		</div>
+	</div>
+	<!-- ESTADO USUARIO -->
+	<div id="userStatus" class="text-center mt-4 font-semibold"></div>
+<script>
+	//- Modal de Noticias
+	const newsModal = document.getElementById("newsModal");
+	const modalTitle = document.getElementById("modalTitle");
+	const modalImage = document.getElementById("modalImage");
+	const modalText = document.getElementById("modalText");
+
+	function openNewsModal(title, text, imageUrl) {
+	modalTitle.textContent = title;
+	modalText.textContent = text;
+	if(!imageUrl || imageUrl === "#"){
+		modalImage.style.display = "none";
+	} else {
+		modalImage.src = imageUrl;
+		modalImage.style.display = "block";
+	}
+	newsModal.classList.remove("hidden");
+	}
+
+	function closeNewsModal() {
+	newsModal.classList.add("hidden");
+	}
+	//
+	const newsContainer = document.getElementById("newsContainer");
+	const loginModal = document.getElementById("loginModal");
+	const navLoginBtn = document.getElementById("navLoginBtn");
+	const loginForm = document.getElementById("loginForm");
+	const loginMsg = document.getElementById("loginMsg");
+	const navbar = document.getElementById("navbar");
+	const userStatus = document.getElementById("userStatus");
+
+	function openLogin() { loginModal.classList.remove("hidden"); }
+	function closeLogin() { loginModal.classList.add("hidden"); }
+	function setToken(token) { localStorage.setItem("token", token); }
+	function logout() { localStorage.removeItem("token"); location.reload(); }
+
+	navLoginBtn.addEventListener("click", openLogin);
+
+	// Función para color aleatorio
+	function randomColor(){ return '#' + Math.floor(Math.random()*16777215).toString(16); }
+
+	// Función para crear cards de noticias
+	function addNewsCard(title, text, imageUrl, tipo) {
+		const div = document.createElement("div");
+		div.className = "news-card bg-white dark:bg-gray-300 shadow-md overflow-hidden p-0 " + (tipo === 1 ? "importante" : "");
+		const imageContent = (!imageUrl || imageUrl === "#")
+			? `<div class="w-full h-44 flex items-center justify-center" style="background-color:${randomColor()};"></div>`
+			: `<div class="w-full h-44 overflow-hidden flex items-center justify-center">
+					<img src="${imageUrl}" alt="${title}" class="object-cover w-full h-full">
+				</div>`;
+		div.innerHTML = `
+			${imageContent}
+			<div class="p-4">
+				<h3 class="font-semibold text-lg mb-2">${title}</h3>
+				<p class="text-sm line-clamp-3">${text}</p>
+			</div>
+		`;
+  		// Abrir modal al hacer click
+  		div.addEventListener("click", () => openNewsModal(title, text, imageUrl));
+		//
+		newsContainer.appendChild(div);
+	}
+
+	// Cargar noticias desde backend
+	async function loadNews() {
+		try {
+			const res = await fetch("/news");
+			const newsListData = await res.json();
+			newsContainer.innerHTML = "";
+			newsListData.forEach(n => {
+				addNewsCard(n.title, n.text, n.imageUrl, n.tipo);
+			});
+		} catch {
+			newsContainer.innerHTML = "<p class='text-center text-red-600'>No se pudieron cargar las noticias.</p>";
+		}
+	}
+
+	loadNews();
+
+		// Actualizar UI según sesión
+		function updateUIForLoggedUser(payload) {
+			loginModal.classList.add("hidden");
+			navLoginBtn.style.display = "none";
+			let sobrenombre;
+			if(payload.nivel >= 11 && payload.nivel <= 13) sobrenombre = "Sabon ";
+			else if(payload.nivel >= 14 && payload.nivel <= 16) sobrenombre = "Sabon-Nim ";
+			else if(payload.nivel >= 17 && payload.nivel <= 18) sobrenombre = "Sagium-Nim ";
+			else if(payload.nivel == 17) sobrenombre = "Sasong-Nim ";
+			else sobrenombre = "";
+			userStatus.textContent = `Has iniciado sesión como: ${sobrenombre}${payload.nombre}`;
+ 			document.querySelectorAll("#navbar .sessionBtn").forEach(el => el.remove());
+			const actionBtn = document.createElement("a");
+			actionBtn.className = "px-2 py-1 rounded hover:bg-cyan-950 hover:text-white hover:no-underline transition-colors";
+
+			if(payload.nivel >= 11) {
+				actionBtn.href = "admin.html";
+				actionBtn.textContent = "Admin";
+			} else {
+				actionBtn.href = "#";
+				actionBtn.textContent = "Logout";
+				actionBtn.addEventListener("click", logout);
+			}
+			navbar.appendChild(actionBtn);
+		}
+
+		// Verificar si ya hay token
+		const token = localStorage.getItem("token");
+		if(token) {
+			try {
+				const payload = JSON.parse(atob(token.split(".")[1]));
+				updateUIForLoggedUser(payload);
+			} catch {
+				localStorage.removeItem("token");
+			}
+		}
+
+		// Login
+		loginForm.addEventListener("submit", async e => {
+			e.preventDefault();
+			const email = loginForm.email.value;
+			const password = loginForm.password.value;
+
+			try {
+				const res = await fetch("/login", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ email, password })
+				});
+				const result = await res.json();
+
+				if(res.ok) {
+					setToken(result.token);
+					const payload = JSON.parse(atob(result.token.split(".")[1]));
+					updateUIForLoggedUser(payload);
+					loginMsg.textContent = "";
+				} else {
+					loginMsg.textContent = result;
+					loginMsg.className = "text-red-600 text-center mt-3 text-sm";
+				}
+			} catch {
+				loginMsg.textContent = "Error de conexión.";
+				loginMsg.className = "text-red-600 text-center mt-3 text-sm";
+			}
+		});
+	</script>
+</body>
+</html>
