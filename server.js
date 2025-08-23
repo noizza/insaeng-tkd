@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // Pool MySQL
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
-  port: process.env.PORT,
+  port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -284,7 +284,18 @@ app.delete("/admin/users/:id", auth(["administrador"]), async (req, res) => {
 app.get("/news", async (req, res) => {
   try {
     const conn = await pool.getConnection();
-    const [rows] = await conn.query("SELECT id, title, text, imageUrl, tipo FROM news ORDER BY id DESC");
+
+    const [rows] = await conn.query(`
+      SELECT id, title, text, imageUrl, tipo, created_at
+      FROM news
+      ORDER BY 
+        CASE 
+          WHEN tipo = 1 THEN created_at 
+          ELSE NULL 
+        END DESC,  -- la última noticia importante primero
+        created_at DESC  -- luego el resto por fecha descendente
+    `);
+
     conn.release();
     res.json(rows);
   } catch (err) {

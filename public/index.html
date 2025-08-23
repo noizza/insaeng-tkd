@@ -3,15 +3,20 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Mi Web</title>
+	<title>Insaeng - TKD</title>
 	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.css"/>
 <style>
+	#map { width: 400px; height: 400px; margin: auto; }
 	/* Efecto neón amarillo desde los bordes para noticias importantes */
 	.news-card {
 		border-radius: 1rem;
 		overflow: hidden;
 		transform: scale(1);
 		transition: transform 0.3s; 
+		flex: 0 0 25%;
+		min-width: 0;
 	}
 	.news-card.importante {
 		position: relative;
@@ -33,6 +38,14 @@
 		transform: scale(1.05);
 		z-index: 10;
 	}
+	#newsContainer::-webkit-scrollbar {
+	display: none;
+	}
+	#newsContainer {
+	-ms-overflow-style: none;  /* IE y Edge */
+	scrollbar-width: none;     /* Firefox */
+	}
+
 </style>
 </head>
 <body class="bg-gray-200 dark:bg-gray-200 text-gray-900 dark:text-gray-900">
@@ -44,9 +57,9 @@
 			<h1 class="text-black text-xl font-bold">INSAENG</h1>
 		</div>
 		<nav id="navbar" class="flex space-x-4 text-black px-4">
-			<a href="#inicio" class="px-2 py-1 rounded hover:bg-cyan-950 hover:text-white hover:no-underline transition-colors">Inicio</a>
-			<a href="cuenta.html" class="px-2 py-1 rounded hover:bg-cyan-950 hover:text-white hover:no-underline transition-colors">Cuenta</a>
-			<a href="#" id="navLoginBtn" class="px-2 py-1 rounded hover:bg-cyan-950 hover:text-white hover:no-underline transition-colors">Login</a>
+			<a href="#inicio" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Inicio</a>
+			<a href="cuenta.html" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Cuenta</a>
+			<a href="#" id="navLoginBtn" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Login</a>
 		</nav>
 	</header>
 
@@ -59,10 +72,20 @@
 	</section>
 
 	<!-- NOTICIAS -->
-	<section id="noticias" class="p-6">
-		<h2 class="text-2xl font-bold mb-4 text-center">Noticias</h2>
-		<div id="newsContainer" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"></div>
-	</section>
+	<div class="relative max-w-6xl mx-auto">
+		<!-- Flecha izquierda -->
+		<button id="scrollLeft" class="absolute -left-6 top-1/2 transform -translate-y-1/2 bg-cyan-800 text-white p-2 rounded-full z-10 hover:bg-cyan-600">
+			&#8592;
+		</button>
+		<section id="noticias" class="p-6">
+			<h2 class="text-2xl font-bold mb-4 text-center">Noticias</h2>
+			<div id="newsContainer" class="flex overflow-x-auto gap-3 py-4 scroll-smooth"></div>
+		</section>
+		<!-- Flecha derecha -->
+		<button id="scrollRight" class="absolute -right-6 top-1/2 transform -translate-y-1/2 bg-cyan-800 text-white p-2 rounded-full z-10 hover:bg-cyan-600">
+		&#8594;
+		</button>
+	</div>
 
 	<!-- LOGIN FLOTANTE -->
 	<div id="loginModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
@@ -88,86 +111,106 @@
 			<p id="modalText" class="text-base"></p>
 		</div>
 	</div>
+	<!-- MAPA -->
+	<section id="mapa" class="p-6 text-center max-w-4xl mx-auto">
+	<h2 class="text-2xl font-bold mb-4">Mapa de Dojos Insaeng en tu ciudad</h2>
+	<div id="map" class="mx-auto rounded shadow-md" style="width:400px; height:400px;"></div>
+	</section>
+
+	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 	<!-- ESTADO USUARIO -->
 	<div id="userStatus" class="text-center mt-4 font-semibold"></div>
-<script>
-	//- Modal de Noticias
-	const newsModal = document.getElementById("newsModal");
-	const modalTitle = document.getElementById("modalTitle");
-	const modalImage = document.getElementById("modalImage");
-	const modalText = document.getElementById("modalText");
+	<script>
+		//- Modal de Noticias
+		const newsModal = document.getElementById("newsModal");
+		const modalTitle = document.getElementById("modalTitle");
+		const modalImage = document.getElementById("modalImage");
+		const modalText = document.getElementById("modalText");
 
-	function openNewsModal(title, text, imageUrl) {
-	modalTitle.textContent = title;
-	modalText.textContent = text;
-	if(!imageUrl || imageUrl === "#"){
-		modalImage.style.display = "none";
-	} else {
-		modalImage.src = imageUrl;
-		modalImage.style.display = "block";
-	}
-	newsModal.classList.remove("hidden");
-	}
-
-	function closeNewsModal() {
-	newsModal.classList.add("hidden");
-	}
-	//
-	const newsContainer = document.getElementById("newsContainer");
-	const loginModal = document.getElementById("loginModal");
-	const navLoginBtn = document.getElementById("navLoginBtn");
-	const loginForm = document.getElementById("loginForm");
-	const loginMsg = document.getElementById("loginMsg");
-	const navbar = document.getElementById("navbar");
-	const userStatus = document.getElementById("userStatus");
-
-	function openLogin() { loginModal.classList.remove("hidden"); }
-	function closeLogin() { loginModal.classList.add("hidden"); }
-	function setToken(token) { localStorage.setItem("token", token); }
-	function logout() { localStorage.removeItem("token"); location.reload(); }
-
-	navLoginBtn.addEventListener("click", openLogin);
-
-	// Función para color aleatorio
-	function randomColor(){ return '#' + Math.floor(Math.random()*16777215).toString(16); }
-
-	// Función para crear cards de noticias
-	function addNewsCard(title, text, imageUrl, tipo) {
-		const div = document.createElement("div");
-		div.className = "news-card bg-white dark:bg-gray-300 shadow-md overflow-hidden p-0 " + (tipo === 1 ? "importante" : "");
-		const imageContent = (!imageUrl || imageUrl === "#")
-			? `<div class="w-full h-44 flex items-center justify-center" style="background-color:${randomColor()};"></div>`
-			: `<div class="w-full h-44 overflow-hidden flex items-center justify-center">
-					<img src="${imageUrl}" alt="${title}" class="object-cover w-full h-full">
-				</div>`;
-		div.innerHTML = `
-			${imageContent}
-			<div class="p-4">
-				<h3 class="font-semibold text-lg mb-2">${title}</h3>
-				<p class="text-sm line-clamp-3">${text}</p>
-			</div>
-		`;
-  		// Abrir modal al hacer click
-  		div.addEventListener("click", () => openNewsModal(title, text, imageUrl));
-		//
-		newsContainer.appendChild(div);
-	}
-
-	// Cargar noticias desde backend
-	async function loadNews() {
-		try {
-			const res = await fetch("/news");
-			const newsListData = await res.json();
-			newsContainer.innerHTML = "";
-			newsListData.forEach(n => {
-				addNewsCard(n.title, n.text, n.imageUrl, n.tipo);
-			});
-		} catch {
-			newsContainer.innerHTML = "<p class='text-center text-red-600'>No se pudieron cargar las noticias.</p>";
+		function openNewsModal(title, text, imageUrl) {
+		modalTitle.textContent = title;
+		modalText.textContent = text;
+		if(!imageUrl || imageUrl === "#"){
+			modalImage.style.display = "none";
+		} else {
+			modalImage.src = imageUrl;
+			modalImage.style.display = "block";
 		}
-	}
+		newsModal.classList.remove("hidden");
+		}
 
-	loadNews();
+		function closeNewsModal() {
+		newsModal.classList.add("hidden");
+		}
+		//
+		const newsContainer = document.getElementById("newsContainer");
+		const loginModal = document.getElementById("loginModal");
+		const navLoginBtn = document.getElementById("navLoginBtn");
+		const loginForm = document.getElementById("loginForm");
+		const loginMsg = document.getElementById("loginMsg");
+		const navbar = document.getElementById("navbar");
+		const userStatus = document.getElementById("userStatus");
+
+		function openLogin() { loginModal.classList.remove("hidden"); }
+		function closeLogin() { loginModal.classList.add("hidden"); }
+		function setToken(token) { localStorage.setItem("token", token); }
+		function logout() { localStorage.removeItem("token"); location.reload(); }
+
+		navLoginBtn.addEventListener("click", openLogin);
+
+		// Función para color aleatorio
+		function randomColor(){ return '#' + Math.floor(Math.random()*16777215).toString(16); }
+
+		// Función para crear cards de noticias
+		function addNewsCard(title, text, imageUrl, tipo) {
+			const div = document.createElement("div");
+			div.className = "news-card bg-white dark:bg-gray-300 shadow-md overflow-hidden p-0 " + (tipo === 1 ? "importante" : "");
+			const imageContent = (!imageUrl || imageUrl === "#")
+				? `<div class="w-full h-44 flex items-center justify-center" style="background-color:${randomColor()};"></div>`
+				: `<div class="w-full h-44 overflow-hidden flex items-center justify-center">
+						<img src="${imageUrl}" alt="${title}" class="object-cover w-full h-full">
+					</div>`;
+			div.innerHTML = `
+				${imageContent}
+				<div class="p-4">
+					<h3 class="font-semibold text-lg mb-2">${title}</h3>
+					<p class="text-sm line-clamp-3">${text}</p>
+				</div>
+			`;
+			// Abrir modal al hacer click
+			div.addEventListener("click", () => openNewsModal(title, text, imageUrl));
+			//
+			newsContainer.appendChild(div);
+		}
+
+		// Cargar noticias desde backend
+		async function loadNews() {
+			try {
+				const res = await fetch("/news");
+				const newsListData = await res.json();
+				newsContainer.innerHTML = "";
+				newsListData.forEach(n => {
+					addNewsCard(n.title, n.text, n.imageUrl, n.tipo);
+				});
+			} catch {
+				newsContainer.innerHTML = "<p class='text-center text-red-600'>No se pudieron cargar las noticias.</p>";
+			}
+		}
+		const scrollContainer = document.getElementById("newsContainer");
+		const cardWidth = scrollContainer.offsetWidth / 4; // ancho visible de 4 cards
+
+		document.getElementById("scrollLeft").addEventListener("click", () => {
+		scrollContainer.scrollBy({ left: -cardWidth, behavior: "smooth" });
+		});
+
+		document.getElementById("scrollRight").addEventListener("click", () => {
+		scrollContainer.scrollBy({ left: cardWidth, behavior: "smooth" });
+		});
+
+
+
+		loadNews();
 
 		// Actualizar UI según sesión
 		function updateUIForLoggedUser(payload) {
@@ -182,7 +225,7 @@
 			userStatus.textContent = `Has iniciado sesión como: ${sobrenombre}${payload.nombre}`;
  			document.querySelectorAll("#navbar .sessionBtn").forEach(el => el.remove());
 			const actionBtn = document.createElement("a");
-			actionBtn.className = "px-2 py-1 rounded hover:bg-cyan-950 hover:text-white hover:no-underline transition-colors";
+			actionBtn.className = "px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors";
 
 			if(payload.nivel >= 11) {
 				actionBtn.href = "admin.html";
@@ -234,6 +277,73 @@
 				loginMsg.className = "text-red-600 text-center mt-3 text-sm";
 			}
 		});
+		// Coordenadas centrales de Oberá
+		const oberaCoords = [-27.485238, -55.120191];
+
+		// Inicializar mapa fijo
+		const map = L.map('map', {
+			center: oberaCoords,
+			zoom: 13,
+			dragging: true,      // el mapa no se puede mover
+			scrollWheelZoom: true, 
+			doubleClickZoom: false,
+			boxZoom: false,
+			zoomControl: true
+		});
+
+		// Capa de OpenStreetMap
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; OpenStreetMap contributors'
+		}).addTo(map);
+
+		// Marcadores de lugares importantes
+		const lugares = [
+			{ name: "Sede Barrial: Barrio Ecológico", coords: [-27.498867, -55.104017], description: "Profesor: Orlando Villalba IV DAN<br>Telf: 3755-448032", ciudad: "Oberá" },
+			{ name: "Sede Social", coords: [-27.4815, -55.0375], description: "Sede social de Oberá", ciudad: "Oberá" },
+			{ name: "Dojo Campo Viera", coords: [-27.3167, -55.045], description: "Sede de Campo Viera", ciudad: "Campo Viera" }
+		];
+		const markerLayer = L.layerGroup().addTo(map);
+
+		function mostrarSedes(ciudad) {
+			markerLayer.clearLayers(); // limpiar marcadores anteriores
+			const sedes = lugares.filter(l => l.ciudad === ciudad);
+
+			sedes.forEach(lugar => {
+				L.marker(lugar.coords)
+				.addTo(markerLayer)
+				.bindPopup(`<strong>${lugar.name}</strong><br>${lugar.description}<br>
+				<a href="https://www.google.com/maps?q=${lugar.coords[0]},${lugar.coords[1]}" target="_blank">Ver en Google Maps</a>`);
+			});
+		}
+		if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+			const lat = position.coords.latitude;
+			const lon = position.coords.longitude;
+
+			// Aproximación para Campo Viera
+			if (Math.abs(lat - -27.3167) < 0.1 && Math.abs(lon - -55.045) < 0.1) {
+				map.setView([-27.3167, -55.045], 13);
+				mostrarSedes("Campo Viera");
+			} else {
+				map.setView([-27.485238, -55.120191], 13);
+				mostrarSedes("Oberá");
+			}
+			},
+			() => {
+			// Usuario no acepta geolocalización
+			map.setView([-27.485238, -55.120191], 13);
+			mostrarSedes("Oberá");
+			}
+		);
+		} else {
+		// Si el navegador no soporta geolocalización
+		map.setView([-27.485238, -55.120191], 13);
+		mostrarSedes("Oberá");
+		}
 	</script>
 </body>
+<footer class="bg-cyan-800 text-white py-1 mt-10">
+  <p class="text-center">Página oficial Escuela de Taekwondo Insaeng / © Developed by Insaeng Team</p>
+</footer>
 </html>
