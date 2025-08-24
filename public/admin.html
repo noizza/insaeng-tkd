@@ -41,10 +41,11 @@
 <aside class="w-64 bg-gray-300 dark:bg-gray-300 p-4 rounded-2xl flex-shrink-0">
 	<h2 class="text-xl font-bold mb-6">Panel Admin</h2>
 	<ul class="space-y-2">
-		<li><button id="dashboardBtn" class="w-full text-left p-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 hover:text-white">Dashboard</button></li>
-		<li><button id="createUserBtn" class="w-full text-left p-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 hover:text-white">Crear Usuario</button></li>
-		<li><button id="adminNewsBtn" class="w-full text-left p-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 hover:text-white">Crear/Editar Noticias</button></li>
-		<li><button id="adminRolesBtn" class="w-full text-left p-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 hover:text-white hidden">Modificar Roles</button></li>
+		<li><button id="dashboardBtn" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white">Dashboard</button></li>
+		<li><button id="createUserBtn" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white">Crear Usuario</button></li>
+		<li><button id="adminNewsBtn" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white">Crear/Editar Noticias</button></li>
+		<li><button id="adminRolesBtn" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white hidden">Modificar Roles</button></li>
+		<li><button id="btnAddSede" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white hidden">Sedes/Mapa</button></li>
 	</ul>
 </aside>
 
@@ -179,125 +180,51 @@
 			<p id="editHijoMsg" class="mt-2"></p>
 		</div>
 	</div>
-<!-- Modal Editar Libreta 
-<div id="editNotasModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
-  <div class="bg-white dark:bg-gray-200 p-6 rounded-lg shadow-lg w-[900px] max-h-[95vh] overflow-y-auto">
-    <h2 class="text-2xl font-bold mb-4 text-center">Editar libreta de <span id="notasUserName"></span></h2>
+  <!-- Modal de Notas -->
+  <div id="notasModal" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 hidden z-50">
+		<div class="bg-white p-6 rounded-2xl max-w-4xl w-full overflow-auto max-h-[80vh]">
+			<h2 class="text-xl font-bold mb-4" id="notasModalTitulo">Libreta de <span id="notasModalNombre"></span></h2>
 
-    <form id="editNotasForm" class="space-y-4">
-      <div class="flex items-center justify-between mb-4">
-		<button id="prevCategoria" class="px-3 py-1 bg-gray-300 rounded">⬅</button>
-		<h2 id="categoriaTitle" class="text-lg font-bold">Categoría 1</h2>
-		<button id="nextCategoria" class="px-3 py-1 bg-gray-300 rounded">➡</button>
+			<div class="flex items-center justify-between mb-2">
+				<button id="prevCategoria" class="px-2 py-1 bg-gray-400 text-white rounded hover:bg-gray-600">⬅️</button>
+				<span id="categoriaLabel" class="font-semibold text-lg">Categoría</span>
+				<button id="nextCategoria" class="px-2 py-1 bg-gray-400 text-white rounded hover:bg-gray-600">➡️</button>
+			</div>
+
+			<div id="libretaModalContainer" class="mt-6"></div>
+
+			<div class="mt-4 flex justify-end space-x-2">
+				<button id="guardarNotasBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Guardar</button>
+				<button id="cerrarNotasBtn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Cerrar</button>
+			</div>
+		</div>
 	</div>
+	<!-- SEDES / MAPA -->
+	<div id="adminSedes" class="hidden p-6 bg-white dark:bg-gray-300 rounded-2xl shadow-md">
+		<h2 class="text-xl font-semibold mb-4">Sedes / Mapa</h2>
 
-      <table class="w-full border-collapse border border-gray-300 dark:border-gray-600">
-        <thead class="bg-gray-200 dark:bg-gray-200">
-          <tr>
-            <th class="p-2 border border-gray-300 dark:border-gray-600 text-left">Criterio</th>
-            <th class="p-2 border border-gray-300 dark:border-gray-600 text-center">NAOP</th>
-            <th class="p-2 border border-gray-300 dark:border-gray-600 text-center">AOP</th>
-            <th class="p-2 border border-gray-300 dark:border-gray-600 text-center">SOP</th>
-          </tr>
-        </thead>
-        <tbody id="tablaNotasBody">
-          <!-- Cada fila es un criterio
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Desarrollo técnico</td>
-            <td class="text-center border"><input type="radio" name="desarrollo_tecnico" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="desarrollo_tecnico" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="desarrollo_tecnico" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Tul</td>
-            <td class="text-center border"><input type="radio" name="tul" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="tul" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="tul" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Lucha</td>
-            <td class="text-center border"><input type="radio" name="lucha" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="lucha" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="lucha" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Combate</td>
-            <td class="text-center border"><input type="radio" name="combate" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="combate" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="combate" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Rotura</td>
-            <td class="text-center border"><input type="radio" name="rotura" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="rotura" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="rotura" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Zafes</td>
-            <td class="text-center border"><input type="radio" name="zafes" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="zafes" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="zafes" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Enfrentamientos</td>
-            <td class="text-center border"><input type="radio" name="enfrentamientos" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="enfrentamientos" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="enfrentamientos" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Movimientos Fundamentales</td>
-            <td class="text-center border"><input type="radio" name="movimientos" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="movimientos" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="movimientos" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Teoría</td>
-            <td class="text-center border"><input type="radio" name="teoria" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="teoria" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="teoria" value="SOP"></td>
-          </tr>
-          <tr>
-            <td class="p-2 border border-gray-300 dark:border-gray-600">Actitud Marcial</td>
-            <td class="text-center border"><input type="radio" name="actitud_marcial" value="NAOP"></td>
-            <td class="text-center border"><input type="radio" name="actitud_marcial" value="AOP"></td>
-            <td class="text-center border"><input type="radio" name="actitud_marcial" value="SOP"></td>
-          </tr>
-        </tbody>
-      </table>
+		<!-- Formulario para agregar o editar sedes -->
+		<form id="sedeForm" class="bg-white dark:bg-gray-200 p-4 rounded-2xl shadow-md mb-4 max-w-md">
+			<input type="hidden" name="id" id="sedeId">
+			<label class="block mb-2">Nombre de la sede</label>
+			<input type="text" name="nombre" id="sedeNombre" required class="w-full p-2 border rounded mb-2 dark:bg-gray-100">
 
-      <!-- Observaciones
-      <div>
-        <label class="block font-semibold">Observaciones</label>
-        <textarea name="observaciones" rows="4" class="w-full p-2 border rounded dark:text-black"></textarea>
-      </div>
+			<label class="block mb-2">Descripción</label>
+			<textarea name="descripcion" id="sedeDescripcion" rows="4" class="w-full p-2 border rounded mb-2 dark:bg-gray-100"></textarea>
+			
+			<label class="block mb-2">Coordenadas (lat, lng)</label>
+			<input type="text" name="coords" id="sedeCoords" placeholder="-27.328580, -55.051506" required class="w-full p-2 border rounded mb-2 dark:bg-gray-100">
 
-      <!-- Botones
-      <div class="flex justify-end space-x-2 mt-4">
-        <button type="button" id="closeNotasModal" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
-      </div>
-    </form>
-  </div>
-</div>-->
-<!-- Modal de Notas -->
-<div id="notasModal" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 hidden z-50">
-  <div class="bg-white p-6 rounded-2xl max-w-4xl w-full overflow-auto max-h-[80vh]">
-    <h2 class="text-xl font-bold mb-4" id="notasModalTitulo">Libreta de <span id="notasModalNombre"></span></h2>
+			<label class="block mb-2">Ciudad</label>
+			<input type="text" name="ciudad" id="sedeCiudad" placeholder="Ej: Posadas" required  class="w-full p-2 border rounded mb-2 dark:bg-gray-100">
+			
+			<button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700">Guardar</button>
+			<button type="button" id="cancelSedeBtn" class="bg-gray-500 text-white px-4 py-2 rounded-xl hover:bg-gray-600 ml-2">Cancelar</button>
+		</form>
 
-    <div class="flex items-center justify-between mb-2">
-      <button id="prevCategoria" class="px-2 py-1 bg-gray-400 text-white rounded hover:bg-gray-600">⬅️</button>
-      <span id="categoriaLabel" class="font-semibold text-lg">Categoría</span>
-      <button id="nextCategoria" class="px-2 py-1 bg-gray-400 text-white rounded hover:bg-gray-600">➡️</button>
-    </div>
-
-    <div id="libretaModalContainer" class="mt-6"></div>
-
-    <div class="mt-4 flex justify-end space-x-2">
-      <button id="guardarNotasBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Guardar</button>
-      <button id="cerrarNotasBtn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Cerrar</button>
-    </div>
-  </div>
-</div>
+		<!-- Lista de sedes existentes -->
+		<div id="sedesList" class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"></div>
+	</div>
 
 </main>
 
@@ -309,19 +236,21 @@ function logout(){ localStorage.removeItem("token"); window.location.href="/inde
 
 const payload = JSON.parse(atob(token.split('.')[1]));
 if(payload.nivel == 20){
-    document.getElementById("adminRolesBtn").classList.remove("hidden");
+	document.getElementById("adminRolesBtn").classList.remove("hidden");
+	document.getElementById("btnAddSede").classList.remove("hidden");
 }
 
 // Ejecutar al cargar la página
 window.addEventListener("DOMContentLoaded", () => {
-    // Mostrar dashboard
-    dashboard.classList.remove("hidden");
-    adminCreateForm.classList.add("hidden");
-    adminNews.classList.add("hidden");
-    adminRoles.classList.add("hidden");
+	// Mostrar dashboard
+	dashboard.classList.remove("hidden");
+	adminCreateForm.classList.add("hidden");
+	adminNews.classList.add("hidden");
+	adminRoles.classList.add("hidden");
+	adminSedes.classList.add("hidden");
 
-    // Cargar datos dinámicos
-    loadDashboard();
+	// Cargar datos dinámicos
+	loadDashboard();
 });
 
 // MENU
@@ -400,8 +329,8 @@ createNewsForm.addEventListener("submit", async e=>{
 		text: createNewsForm.text.value,
 		tipo: tipoNum,
 		imageUrl: tipoNum == 1 
-                ? "https://consejomedicolp.org.ar/wp-content/uploads/2024/02/avisoImportante3.jpg" 
-                : (imageUrlValue === "" || imageUrlValue === "#") ? "#" : imageUrlValue,
+				? "https://consejomedicolp.org.ar/wp-content/uploads/2024/02/avisoImportante3.jpg" 
+				: (imageUrlValue === "" || imageUrlValue === "#") ? "#" : imageUrlValue,
 	};
 	let res;
 	if(editId){
@@ -477,49 +406,49 @@ async function loadRoles(){
   const users = await usersRes.json();
 
   roles.forEach(r=>{
-    const div = document.createElement("div");
-    div.className = "flex justify-between items-center p-2 border rounded dark:bg-gray-200 space-x-2";
+	const div = document.createElement("div");
+	div.className = "flex justify-between items-center p-2 border rounded dark:bg-gray-200 space-x-2";
 
-    div.innerHTML = `
-      <span>${r.nombre}</span>
-      <div class="flex space-x-2">
-        <button class="editRoleBtn bg-yellow-500 text-white px-2 py-1 rounded">Editar</button>
-      </div>
-    `;
+	div.innerHTML = `
+	  <span>${r.nombre}</span>
+	  <div class="flex space-x-2">
+		<button class="editRoleBtn bg-yellow-500 text-white px-2 py-1 rounded">Editar</button>
+	  </div>
+	`;
 
-    // Editar
-    div.querySelector(".editRoleBtn").onclick = ()=> openEditRoleModal(r);
+	// Editar
+	div.querySelector(".editRoleBtn").onclick = ()=> openEditRoleModal(r);
 
-    // Eliminar solo si ningún usuario tiene este rol
-    const assigned = users.some(u => u.rol === r.nombre);
-    if(!assigned){
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "delRoleBtn bg-red-600 text-white px-2 py-1 rounded";
-      deleteBtn.textContent = "Eliminar";
-      deleteBtn.onclick = async () => {
-        if(!confirm(`¿Eliminar el rol "${r.nombre}"?`)) return;
-        const res = await fetch(`/admin/roles/${r.id}`, {
-          method: "DELETE",
-          headers: {"Authorization":"Bearer " + token}
-        });
-        if(res.ok){
-          loadRoles(); // recarga la lista
-        } else {
-          const text = await res.text();
-          alert("Error al eliminar rol: " + text);
-        }
-      };
-      div.querySelector("div.flex").appendChild(deleteBtn);
-    }
+	// Eliminar solo si ningún usuario tiene este rol
+	const assigned = users.some(u => u.rol === r.nombre);
+	if(!assigned){
+	  const deleteBtn = document.createElement("button");
+	  deleteBtn.className = "delRoleBtn bg-red-600 text-white px-2 py-1 rounded";
+	  deleteBtn.textContent = "Eliminar";
+	  deleteBtn.onclick = async () => {
+		if(!confirm(`¿Eliminar el rol "${r.nombre}"?`)) return;
+		const res = await fetch(`/admin/roles/${r.id}`, {
+		  method: "DELETE",
+		  headers: {"Authorization":"Bearer " + token}
+		});
+		if(res.ok){
+		  loadRoles(); // recarga la lista
+		} else {
+		  const text = await res.text();
+		  alert("Error al eliminar rol: " + text);
+		}
+	  };
+	  div.querySelector("div.flex").appendChild(deleteBtn);
+	}
 
-    roleList.appendChild(div);
+	roleList.appendChild(div);
   });
 }
 
 function openEditRoleModal(role) {
   if (!role.id) {
-    console.error("El rol no tiene ID", role);
-    return;
+	console.error("El rol no tiene ID", role);
+	return;
   }
   document.getElementById("editRoleId").value = role.id;
   document.getElementById("editRoleName").value = role.nombre;
@@ -542,17 +471,17 @@ document.getElementById("editRoleForm").addEventListener("submit", async e => {
   if(isNaN(nivel) || nivel < 1) nivel = 1;
 
   const payload = {
-    nombre: document.getElementById("editRoleName").value.trim(),
-    nivel: nivel
+	nombre: document.getElementById("editRoleName").value.trim(),
+	nivel: nivel
   };
 
   const res = await fetch(`/admin/roles/${id}`, {
-    method: "PATCH",
-    headers: { 
-      "Content-Type": "application/json", 
-      "Authorization": "Bearer " + token 
-    },
-    body: JSON.stringify(payload)
+	method: "PATCH",
+	headers: { 
+	  "Content-Type": "application/json", 
+	  "Authorization": "Bearer " + token 
+	},
+	body: JSON.stringify(payload)
   });
 
   const text = await res.text();
@@ -561,129 +490,129 @@ document.getElementById("editRoleForm").addEventListener("submit", async e => {
   msg.className = res.ok ? "text-green-600 mt-2" : "text-red-600 mt-2";
 
   if (res.ok) {
-    loadRoles();
-    setTimeout(() => closeEditRoleModal(), 1000);
+	loadRoles();
+	setTimeout(() => closeEditRoleModal(), 1000);
   }
 });
 
 async function loadRolesOptions() {
-    const res = await fetch("/admin/roles", { headers: { "Authorization": "Bearer " + token } });
-    const roles = await res.json();
+	const res = await fetch("/admin/roles", { headers: { "Authorization": "Bearer " + token } });
+	const roles = await res.json();
 
-    // Nivel del usuario actual desde el token
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const userNivel = payload.nivel || 1;
+	// Nivel del usuario actual desde el token
+	const payload = JSON.parse(atob(token.split('.')[1]));
+	const userNivel = payload.nivel || 1;
 
-    const select = document.querySelector("#adminCreateForm select[name='rol']");
-    select.innerHTML = "";
+	const select = document.querySelector("#adminCreateForm select[name='rol']");
+	select.innerHTML = "";
 
-    // Filtramos solo roles de nivel menor al usuario actual
-    const rolesFiltrados = roles.filter(r => r.nivel < userNivel);
+	// Filtramos solo roles de nivel menor al usuario actual
+	const rolesFiltrados = roles.filter(r => r.nivel < userNivel);
 
-    // Ordenamos por nivel ascendente
-    rolesFiltrados.sort((a, b) => a.nivel - b.nivel);
+	// Ordenamos por nivel ascendente
+	rolesFiltrados.sort((a, b) => a.nivel - b.nivel);
 
-    rolesFiltrados.forEach(r => {
-        const option = document.createElement("option");
-        option.value = r.id; // usamos el ID ahora
-        option.textContent = `${r.nombre} (nivel ${r.nivel})`;
-        select.appendChild(option);
-    });
+	rolesFiltrados.forEach(r => {
+		const option = document.createElement("option");
+		option.value = r.id; // usamos el ID ahora
+		option.textContent = `${r.nombre} (nivel ${r.nivel})`;
+		select.appendChild(option);
+	});
 
-    // Si no hay roles disponibles
-    if (rolesFiltrados.length === 0) {
-        const option = document.createElement("option");
-        option.value = "";
-        option.textContent = "No hay roles disponibles";
-        select.appendChild(option);
-    }
+	// Si no hay roles disponibles
+	if (rolesFiltrados.length === 0) {
+		const option = document.createElement("option");
+		option.value = "";
+		option.textContent = "No hay roles disponibles";
+		select.appendChild(option);
+	}
 }
 
 //------------Dashboard admin
 function openEditHijoModal(hijo) {
-    document.getElementById("editHijoId").value = hijo.id;
-    document.getElementById("editHijoNombre").value = hijo.nombre;
-    document.getElementById("editHijoEmail").value = hijo.email || "";
+	document.getElementById("editHijoId").value = hijo.id;
+	document.getElementById("editHijoNombre").value = hijo.nombre;
+	document.getElementById("editHijoEmail").value = hijo.email || "";
 	document.getElementById("editHijoImageUrl").value = hijo.imageUrl || "https://i.postimg.cc/v8LP9H67/logo-white-removebg-preview.png";
 
-    const select = document.getElementById("editHijoRol");
-    select.innerHTML = "";
+	const select = document.getElementById("editHijoRol");
+	select.innerHTML = "";
 
-    // Cargar roles filtrados según el nivel del usuario actual
-    fetch("/admin/roles", { headers: { "Authorization": "Bearer " + token } })
-        .then(res => res.json())
-        .then(roles => {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const userNivel = payload.nivel || 1;
+	// Cargar roles filtrados según el nivel del usuario actual
+	fetch("/admin/roles", { headers: { "Authorization": "Bearer " + token } })
+		.then(res => res.json())
+		.then(roles => {
+			const payload = JSON.parse(atob(token.split('.')[1]));
+			const userNivel = payload.nivel || 1;
 
-            roles.filter(r => r.nivel < userNivel).forEach(r => {
-                const option = document.createElement("option");
-                option.value = r.id;
-                option.textContent = `${r.nombre} (nivel ${r.nivel})`;
-                if(r.id === hijo.rol_id) option.selected = true;
-                select.appendChild(option);
-            });
-        });
+			roles.filter(r => r.nivel < userNivel).forEach(r => {
+				const option = document.createElement("option");
+				option.value = r.id;
+				option.textContent = `${r.nombre} (nivel ${r.nivel})`;
+				if(r.id === hijo.rol_id) option.selected = true;
+				select.appendChild(option);
+			});
+		});
 
-    document.getElementById("editHijoModal").classList.remove("hidden");
-    document.getElementById("editHijoModal").classList.add("flex");
+	document.getElementById("editHijoModal").classList.remove("hidden");
+	document.getElementById("editHijoModal").classList.add("flex");
 }
 
 function closeEditHijoModal() {
-    document.getElementById("editHijoModal").classList.add("hidden");
-    document.getElementById("editHijoModal").classList.remove("flex");
+	document.getElementById("editHijoModal").classList.add("hidden");
+	document.getElementById("editHijoModal").classList.remove("flex");
 }
 
 document.getElementById("editHijoForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const id = parseInt(document.getElementById("editHijoId").value);
-    const nombre = document.getElementById("editHijoNombre").value.trim();
-    const email = document.getElementById("editHijoEmail").value.trim();
-    const rol_id = parseInt(document.getElementById("editHijoRol").value);
+	e.preventDefault();
+	const id = parseInt(document.getElementById("editHijoId").value);
+	const nombre = document.getElementById("editHijoNombre").value.trim();
+	const email = document.getElementById("editHijoEmail").value.trim();
+	const rol_id = parseInt(document.getElementById("editHijoRol").value);
 	const imageUrl = document.getElementById("editHijoImageUrl").value.trim();
 
-    const res = await fetch(`/admin/users/${id}`, {
-        method: "PATCH",
-        headers: { 
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token 
-        },
-        body: JSON.stringify({ nombre, email, rol_id, imageUrl })
-    });
+	const res = await fetch(`/admin/users/${id}`, {
+		method: "PATCH",
+		headers: { 
+			"Content-Type": "application/json",
+			"Authorization": "Bearer " + token 
+		},
+		body: JSON.stringify({ nombre, email, rol_id, imageUrl })
+	});
 
-    const text = await res.text();
-    const msg = document.getElementById("editHijoMsg");
-    msg.textContent = text;
-    msg.className = res.ok ? "text-green-600 mt-2" : "text-red-600 mt-2";
+	const text = await res.text();
+	const msg = document.getElementById("editHijoMsg");
+	msg.textContent = text;
+	msg.className = res.ok ? "text-green-600 mt-2" : "text-red-600 mt-2";
 
-    if(res.ok){
-        loadDashboard();           // recarga lista de hijos
-        setTimeout(() => closeEditHijoModal(), 1000);
-    }
+	if(res.ok){
+		loadDashboard();           // recarga lista de hijos
+		setTimeout(() => closeEditHijoModal(), 1000);
+	}
 });
 
 async function loadDashboard() {
-    // Obtener datos de usuario y sus hijos
-    const res = await fetch("/admin/children", {
-        headers: { "Authorization": "Bearer " + token }
-    });
-    const data = await res.json();
-    const hijos = data.hijos || data; // CORRECCIÓN
+	// Obtener datos de usuario y sus hijos
+	const res = await fetch("/admin/children", {
+		headers: { "Authorization": "Bearer " + token }
+	});
+	const data = await res.json();
+	const hijos = data.hijos || data; // CORRECCIÓN
 
-    // Mostrar mensaje de bienvenida con Sobrenombre de rol
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    let sobrenombre;
-    if(payload.nivel >= 11 && payload.nivel <= 13) sobrenombre = "Sabon";
-    else if(payload.nivel >= 14 && payload.nivel <= 16) sobrenombre = "Sabon-Nim";
-    else if(payload.nivel >= 17 && payload.nivel <= 18) sobrenombre = "Sagium-Nim";
-    else if(payload.nivel == 17) sobrenombre = "Sasong-Nim";
-    else sobrenombre = "";
+	// Mostrar mensaje de bienvenida con Sobrenombre de rol
+	const payload = JSON.parse(atob(token.split('.')[1]));
+	let sobrenombre;
+	if(payload.nivel >= 11 && payload.nivel <= 13) sobrenombre = "Sabon";
+	else if(payload.nivel >= 14 && payload.nivel <= 16) sobrenombre = "Sabon-Nim";
+	else if(payload.nivel >= 17 && payload.nivel <= 18) sobrenombre = "Sagium-Nim";
+	else if(payload.nivel == 17) sobrenombre = "Sasong-Nim";
+	else sobrenombre = "";
 
-    document.getElementById("dashboardWelcome").textContent =
-        `Bienvenido ${sobrenombre} ${payload.nombre}`;
+	document.getElementById("dashboardWelcome").textContent =
+		`Bienvenido ${sobrenombre} ${payload.nombre}`;
 
 
-    // INFORMACIÓN RESUMIDA DE HIJOS
+	// INFORMACIÓN RESUMIDA DE HIJOS
 	const rolEmojis = {
 		1: "⬜",
 		2: "⬜🟨",
@@ -697,19 +626,19 @@ async function loadDashboard() {
 		10: "🟥⬛",
 		11: "⬛"
 	};
-    const hijosInfo = document.getElementById("hijosInfo");
-    if(!hijos || hijos.length === 0) {
-        hijosInfo.innerHTML = `<p class="text-red-600 font-semibold">No hay información de que tengas hijos a cargo</p>`;
-    } else {
-        // Contar hijos por rol
-        const conteoRoles = {};
-        hijos.forEach(h => {
-            conteoRoles[h.rol_id] = (conteoRoles[h.rol_id] || 0) + 1;
-        });
+	const hijosInfo = document.getElementById("hijosInfo");
+	if(!hijos || hijos.length === 0) {
+		hijosInfo.innerHTML = `<p class="text-red-600 font-semibold">No hay información de que tengas hijos a cargo</p>`;
+	} else {
+		// Contar hijos por rol
+		const conteoRoles = {};
+		hijos.forEach(h => {
+			conteoRoles[h.rol_id] = (conteoRoles[h.rol_id] || 0) + 1;
+		});
 
-        let infoHTML = `<p class="font-semibold mb-2">Información de alumnos:</p>`;
-        infoHTML += `<p>Total de alumnos: ${hijos.length}</p>`;
-        for(const rolId in conteoRoles) {
+		let infoHTML = `<p class="font-semibold mb-2">Información de alumnos:</p>`;
+		infoHTML += `<p>Total de alumnos: ${hijos.length}</p>`;
+		for(const rolId in conteoRoles) {
 			const hijoConRol = hijos.find(h => h.rol_id == rolId);
 			const rolNombre = hijoConRol ? hijoConRol.rol : "Desconocido";
 			const nivel = hijoConRol ? hijoConRol.rol_nivel : 0;  // <-- CORRECTO
@@ -720,12 +649,12 @@ async function loadDashboard() {
 				emoji = rolEmojis[nivel] || "";
 			}
 			infoHTML += `<p>${emoji}${rolNombre}: ${conteoRoles[rolId]}</p>`;
-        }
-        hijosInfo.innerHTML = infoHTML;
-    }
+		}
+		hijosInfo.innerHTML = infoHTML;
+	}
 	//
-    const hijosList = document.getElementById("hijosList");
-    hijosList.innerHTML = "";
+	const hijosList = document.getElementById("hijosList");
+	hijosList.innerHTML = "";
 
 	hijos.forEach(h => {
 		const div = document.createElement("div");
@@ -777,162 +706,284 @@ let categoriaIndex = 0;
 let notasHijoId = null;
 
 async function openNotasModal(hijo) {
-    notasHijoId = hijo.id;
+	notasHijoId = hijo.id;
 
-    document.getElementById("notasModalNombre").textContent = hijo.nombre;
-    document.getElementById("notasModal").classList.remove("hidden");
+	document.getElementById("notasModalNombre").textContent = hijo.nombre;
+	document.getElementById("notasModal").classList.remove("hidden");
 
-    // Traer libretas del hijo
-    const res = await fetch(`/admin/users/${hijo.id}/grades`, {
-        headers: { "Authorization": "Bearer " + token }
-    });
-    if(!res.ok) return alert("Error al cargar las libretas");
-    const data = await res.json();
-    // Orden ascendente por categoría (numérico)
-    notasHijo = data.notas.sort((a,b) => parseInt(a.categoria,10) - parseInt(b.categoria,10));
+	// Traer libretas del hijo
+	const res = await fetch(`/admin/users/${hijo.id}/grades`, {
+		headers: { "Authorization": "Bearer " + token }
+	});
+	if(!res.ok) return alert("Error al cargar las libretas");
+	const data = await res.json();
+	// Orden ascendente por categoría (numérico)
+	notasHijo = data.notas.sort((a,b) => parseInt(a.categoria,10) - parseInt(b.categoria,10));
 
-    // Buscar índice de la categoría que coincida con el nivel del hijo
-    const nivelHijo = hijo.rol_nivel ?? 1; // fallback a 1
-    let indexPorNivel = notasHijo.findIndex(n => parseInt(n.categoria,10) === nivelHijo-1);
+	// Buscar índice de la categoría que coincida con el nivel del hijo
+	const nivelHijo = hijo.rol_nivel ?? 1; // fallback a 1
+	let indexPorNivel = notasHijo.findIndex(n => parseInt(n.categoria,10) === nivelHijo-1);
 
-    if(indexPorNivel >= 0) {
-        // Si ya existe esa libreta, abrir en ella
-        categoriaIndex = indexPorNivel;
-    } else {
-        // Solo crear una nueva si el nivel es mayor a la última categoría existente
-        const ultimaCategoria = parseInt(notasHijo[notasHijo.length - 1]?.categoria ?? 0, 10);
-        if(nivelHijo > ultimaCategoria) {
-            notasHijo.push({ categoria: nivelHijo });
-            categoriaIndex = notasHijo.length - 1;
-        } else {
-            // Si el nivel es menor que la última, pero no existe, lo ubicamos en la más cercana
-            categoriaIndex = 0; 
-        }
-    }
+	if(indexPorNivel >= 0) {
+		// Si ya existe esa libreta, abrir en ella
+		categoriaIndex = indexPorNivel;
+	} else {
+		// Solo crear una nueva si el nivel es mayor a la última categoría existente
+		const ultimaCategoria = parseInt(notasHijo[notasHijo.length - 1]?.categoria ?? 0, 10);
+		if(nivelHijo > ultimaCategoria) {
+			notasHijo.push({ categoria: nivelHijo });
+			categoriaIndex = notasHijo.length - 1;
+		} else {
+			// Si el nivel es menor que la última, pero no existe, lo ubicamos en la más cercana
+			categoriaIndex = 0; 
+		}
+	}
 	renderLibretaModal();
 }
 
 function renderLibretaModal() {
-    if(notasHijo.length === 0) {
-        // si no tiene ninguna, crear temporalmente la categoría 1
-        notasHijo = [{ categoria: 1 }];
-    }
+	if(notasHijo.length === 0) {
+		// si no tiene ninguna, crear temporalmente la categoría 1
+		notasHijo = [{ categoria: 1 }];
+	}
 
-    const n = notasHijo[categoriaIndex];
-    const rolPorCategoria = {
-        1: "IX GUP - CINTURON BLANCO PUNTA AMARILLA",
-        2: "VIII GUP - CINTURON AMARILLO",
-        3: "VII GUP - CINTURON AMARILLO PUNTA VERDE",
-        4: "VI GUP - CINTURON VERDE",
-        5: "V GUP - CINTURON VERDE PUNTA AZUL",
-        6: "IV GUP - CINTURON AZUL",
-        7: "III GUP - CINTURON AZUL PUNTA ROJA",
-        8: "II GUP - CINTURON ROJO",
-        9: "I GUP - CINTURON ROJO PUNTA NEGRA",
-        10: "I DAN",
-        11: "II DAN",
-        12: "III DAN",
-        13: "IV DAN",
-        14: "V DAN",
-        15: "VI DAN",
-        16: "VII DAN",
-        17: "VIII DAN",
-        18: "IX DAN"
-    };
+	const n = notasHijo[categoriaIndex];
+	const rolPorCategoria = {
+		1: "IX GUP - CINTURON BLANCO PUNTA AMARILLA",
+		2: "VIII GUP - CINTURON AMARILLO",
+		3: "VII GUP - CINTURON AMARILLO PUNTA VERDE",
+		4: "VI GUP - CINTURON VERDE",
+		5: "V GUP - CINTURON VERDE PUNTA AZUL",
+		6: "IV GUP - CINTURON AZUL",
+		7: "III GUP - CINTURON AZUL PUNTA ROJA",
+		8: "II GUP - CINTURON ROJO",
+		9: "I GUP - CINTURON ROJO PUNTA NEGRA",
+		10: "I DAN",
+		11: "II DAN",
+		12: "III DAN",
+		13: "IV DAN",
+		14: "V DAN",
+		15: "VI DAN",
+		16: "VII DAN",
+		17: "VIII DAN",
+		18: "IX DAN"
+	};
 
-    document.getElementById("categoriaLabel").textContent = `Categoría: ${rolPorCategoria[n.categoria] || n.categoria}`;
+	document.getElementById("categoriaLabel").textContent = `Categoría: ${rolPorCategoria[n.categoria] || n.categoria}`;
 
-    const materias = {
-        desarrollo_tecnico: "DESARROLLO",
-        tul: "TUL",
-        lucha: "1/2 LUCHA",
-        combate: "COMBATE",
-        rotura: "ROTURA",
-        zafes: "ZAFES/PALANCAS/LANCES/CAIDAS",
-        enfrentamientos: "ENFRENTAMIENTOS",
-        movimientos: "MOVIMIENTOS FUNDAMENTALES",
-        teoria: "TEORÍA",
-        actitud_marcial: "ACTITUD MARCIAL"
-    };
+	const materias = {
+		desarrollo_tecnico: "DESARROLLO",
+		tul: "TUL",
+		lucha: "1/2 LUCHA",
+		combate: "COMBATE",
+		rotura: "ROTURA",
+		zafes: "ZAFES/PALANCAS/LANCES/CAIDAS",
+		enfrentamientos: "ENFRENTAMIENTOS",
+		movimientos: "MOVIMIENTOS FUNDAMENTALES",
+		teoria: "TEORÍA",
+		actitud_marcial: "ACTITUD MARCIAL"
+	};
 
-    let html = `<div class="overflow-x-auto">
-        <table class="min-w-full border-collapse text-left">
-            <thead>
-                <tr>
-                    <th class="border px-2 py-1"></th>
-                    <th class="bg-gray-400 border px-2 py-1 text-center">NAOP</th>
-                    <th class="bg-gray-400 border px-2 py-1 text-center">AOP</th>
-                    <th class="bg-gray-400 border px-2 py-1 text-center">SOP</th>
-                </tr>
-            </thead>
-            <tbody>`;
+	let html = `<div class="overflow-x-auto">
+		<table class="min-w-full border-collapse text-left">
+			<thead>
+				<tr>
+					<th class="border px-2 py-1"></th>
+					<th class="bg-gray-400 border px-2 py-1 text-center">NAOP</th>
+					<th class="bg-gray-400 border px-2 py-1 text-center">AOP</th>
+					<th class="bg-gray-400 border px-2 py-1 text-center">SOP</th>
+				</tr>
+			</thead>
+			<tbody>`;
 
-    Object.keys(materias).forEach(col => {
-        const valor = n[col] ?? -1;
-        html += `<tr class="hover:bg-gray-300">
-            <td class="border px-4 py-2 font-semibold">${materias[col]}</td>
-            <td class="border px-4 py-2 text-center"><input type="radio" name="${col}" value="0" ${valor===0?"checked":""}></td>
-            <td class="border px-4 py-2 text-center"><input type="radio" name="${col}" value="1" ${valor===1?"checked":""}></td>
-            <td class="border px-4 py-2 text-center"><input type="radio" name="${col}" value="2" ${valor===2?"checked":""}></td>
-        </tr>`;
-    });
+	Object.keys(materias).forEach(col => {
+		const valor = n[col] ?? -1;
+		html += `<tr class="hover:bg-gray-300">
+			<td class="border px-4 py-2 font-semibold">${materias[col]}</td>
+			<td class="border px-4 py-2 text-center"><input type="radio" name="${col}" value="0" ${valor===0?"checked":""}></td>
+			<td class="border px-4 py-2 text-center"><input type="radio" name="${col}" value="1" ${valor===1?"checked":""}></td>
+			<td class="border px-4 py-2 text-center"><input type="radio" name="${col}" value="2" ${valor===2?"checked":""}></td>
+		</tr>`;
+	});
 
-    html += `</tbody></table></div>`;
-    document.getElementById("libretaModalContainer").innerHTML = html;
+	html += `</tbody></table></div>`;
+	document.getElementById("libretaModalContainer").innerHTML = html;
 }
 
 // Cerrar modal
 document.getElementById("cerrarNotasBtn").addEventListener("click", () => {
-    document.getElementById("notasModal").classList.add("hidden");
+	document.getElementById("notasModal").classList.add("hidden");
 });
 
 // Cambiar categoría
 document.getElementById("prevCategoria").addEventListener("click", () => {
-    if(categoriaIndex > 0) {
-        categoriaIndex--;
-        renderLibretaModal();
-    }
+	if(categoriaIndex > 0) {
+		categoriaIndex--;
+		renderLibretaModal();
+	}
 });
 
 document.getElementById("nextCategoria").addEventListener("click", () => {
-    if (categoriaIndex < notasHijo.length - 1) {
-        // Si ya existe la siguiente, solo moverse
-        categoriaIndex++;
-    } else {
-        // Si estamos en la última, crear una nueva categoría consecutiva
-        const ultimaCategoria = parseInt(notasHijo[notasHijo.length - 1].categoria, 10);
+	if (categoriaIndex < notasHijo.length - 1) {
+		// Si ya existe la siguiente, solo moverse
+		categoriaIndex++;
+	} else {
+		// Si estamos en la última, crear una nueva categoría consecutiva
+		const ultimaCategoria = parseInt(notasHijo[notasHijo.length - 1].categoria, 10);
 
-        if (ultimaCategoria < 18) { // <-- TOPE MÁXIMO
-            const nuevaCategoria = ultimaCategoria + 1;
-            notasHijo.push({ categoria: nuevaCategoria });
-            categoriaIndex = notasHijo.length - 1;
-        }
-    }
-    renderLibretaModal();
+		if (ultimaCategoria < 18) { // <-- TOPE MÁXIMO
+			const nuevaCategoria = ultimaCategoria + 1;
+			notasHijo.push({ categoria: nuevaCategoria });
+			categoriaIndex = notasHijo.length - 1;
+		}
+	}
+	renderLibretaModal();
 });
 
 
 // Guardar notas
 document.getElementById("guardarNotasBtn").addEventListener("click", async () => {
-    const inputs = document.querySelectorAll("#libretaModalContainer input[type=radio]");
-    const payload = { categoria: notasHijo[categoriaIndex].categoria };
+	const inputs = document.querySelectorAll("#libretaModalContainer input[type=radio]");
+	const payload = { categoria: notasHijo[categoriaIndex].categoria };
 
-    inputs.forEach(i => {
-        if(i.checked) payload[i.name] = parseInt(i.value);
-    });
+	inputs.forEach(i => {
+		if(i.checked) payload[i.name] = parseInt(i.value);
+	});
 
-    const res = await fetch(`/admin/users/${notasHijoId}/grades`, {
-        method: "PATCH",
-        headers: {
-            "Authorization": "Bearer " + token,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-    });
+	const res = await fetch(`/admin/users/${notasHijoId}/grades`, {
+		method: "PATCH",
+		headers: {
+			"Authorization": "Bearer " + token,
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify(payload)
+	});
 
-    if(res.ok) alert("Notas guardadas correctamente");
-    else alert(await res.text());
+	if(res.ok) alert("Notas guardadas correctamente");
+	else alert(await res.text());
 });
+
+//Sedes/Mapas Form
+const sedesList = document.getElementById("sedesList");
+const sedeForm = document.getElementById("sedeForm");
+const sedeIdInput = document.getElementById("sedeId");
+const sedeNombreInput = document.getElementById("sedeNombre");
+const sedeDescripcionInput = document.getElementById("sedeDescripcion");
+const sedeCoordsInput = document.getElementById("sedeCoords");
+const sedeCiudadInput = document.getElementById("sedeCiudad");
+const cancelSedeBtn = document.getElementById("cancelSedeBtn");
+
+// Cargar sedes desde la base de datos
+async function loadSedes() {
+    sedesList.innerHTML = "Cargando...";
+    const res = await fetch("/admin/sedes", {
+        headers: { "Authorization": "Bearer " + token }
+    });
+    if(!res.ok) return alert("Error al cargar sedes");
+    const sedes = await res.json();
+    sedesList.innerHTML = "";
+
+    sedes.forEach(s => {
+        const div = document.createElement("div");
+        div.className = "p-4 border rounded-xl shadow-md bg-white dark:bg-gray-200 flex flex-col gap-2";
+
+		div.innerHTML = `
+			<span class="font-semibold">${s.nombre}</span>
+			<span class="whitespace-pre-wrap">${s.descripcion || ""}</span>
+			<span>Ciudad: ${s.ciudad || "-"}</span>
+			<span>Lat: ${s.lat}, Lng: ${s.lng}</span>
+			<div class="flex gap-2">
+				<button class="editSedeBtn flex-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Editar</button>
+				<button class="delSedeBtn flex-1 px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
+			</div>
+		`;
+
+        div.querySelector(".editSedeBtn").onclick = () => {
+            sedeIdInput.value = s.id;
+            sedeNombreInput.value = s.nombre;
+			sedeDescripcionInput.value = s.descripcion || "";
+			sedeCoordsInput.value = `${s.lat}, ${s.lng}`;
+			sedeCiudadInput.value = s.ciudad || "";
+        };
+
+        div.querySelector(".delSedeBtn").onclick = async () => {
+            if(!confirm(`Eliminar sede "${s.nombre}"?`)) return;
+            const res = await fetch(`/admin/sedes/${s.id}`, {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + token }
+            });
+            if(res.ok) loadSedes();
+            else alert(await res.text());
+        };
+
+        sedesList.appendChild(div);
+    });
+}
+
+// Guardar nueva sede o editar existente
+sedeForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const id = sedeIdInput.value;
+    // Tomar coordenadas y separarlas
+    const [latStr, lngStr] = sedeCoordsInput.value.split(",").map(v => v.trim());
+    const latValue = parseFloat(latStr);
+    const lngValue = parseFloat(lngStr);
+
+    if (isNaN(latValue) || isNaN(lngValue)) {
+        return alert("Coordenadas inválidas. Usa el formato: lat, lng");
+    }
+    const payload = {
+        nombre: sedeNombreInput.value.trim(),
+		descripcion: sedeDescripcionInput.value.trim(),
+		lat: latValue,
+		lng: lngValue,
+		ciudad: sedeCiudadInput.value.trim()
+    };
+
+    let res;
+    if(id) {
+        // Editar
+        res = await fetch(`/admin/sedes/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify(payload)
+        });
+    } else {
+        // Crear
+        res = await fetch("/admin/sedes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify(payload)
+        });
+    }
+
+    if(res.ok){
+        sedeForm.reset();
+        sedeIdInput.value = "";
+		sedeDescripcionInput.value = "";
+        loadSedes();
+    } else {
+        alert(await res.text());
+    }
+});
+
+// Cancelar edición
+cancelSedeBtn.onclick = () => {
+    sedeForm.reset();
+    sedeIdInput.value = "";
+	sedeDescripcionInput.value = "";
+};
+
+// Mostrar la sección al hacer clic en el menú
+document.getElementById("btnAddSede").onclick = () => {
+    dashboard.classList.add("hidden");
+    adminCreateForm.classList.add("hidden");
+    adminNews.classList.add("hidden");
+    adminRoles.classList.add("hidden");
+    adminSedes.classList.remove("hidden");
+    loadSedes();
+};
+
 </script>
 </body>
 </html>

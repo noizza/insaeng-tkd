@@ -8,7 +8,6 @@
 	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.css"/>
 <style>
-	#map { width: 400px; height: 400px; margin: auto; }
 	/* Efecto neón amarillo desde los bordes para noticias importantes */
 	.news-card {
 		border-radius: 1rem;
@@ -114,7 +113,14 @@
 	<!-- MAPA -->
 	<section id="mapa" class="p-6 text-center max-w-4xl mx-auto">
 	<h2 class="text-2xl font-bold mb-4">Mapa de Dojos Insaeng en tu ciudad</h2>
-	<div id="map" class="mx-auto rounded shadow-md" style="width:400px; height:400px;"></div>
+
+	<!-- Selector de ciudad -->
+	<div class="mb-4">
+		<label for="ciudad" class="mr-2 font-semibold">Ver sedes en:</label>
+		<select id="ciudad" class="border rounded p-2"></select>
+	</div>
+
+	<div id="map" class="mx-auto rounded shadow-md" style="width:400px; height:400px; margin: auto;"></div>
 	</section>
 
 	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -122,6 +128,12 @@
 	<!-- ESTADO USUARIO -->
 	<div id="userStatus" class="text-center mt-4 font-semibold"></div>
 	<script>
+		document.addEventListener("keydown", (e) => {
+		if(e.key === "Escape") {
+			closeLogin();
+			closeNewsModal();
+		}
+		});
 		//- Modal de Noticias
 		const newsModal = document.getElementById("newsModal");
 		const modalTitle = document.getElementById("modalTitle");
@@ -198,7 +210,7 @@
 			}
 		}
 		const scrollContainer = document.getElementById("newsContainer");
-		const cardWidth = scrollContainer.offsetWidth / 4; // ancho visible de 4 cards
+		const cardWidth = scrollContainer.querySelector('.news-card')?.offsetWidth || 300;
 
 		document.getElementById("scrollLeft").addEventListener("click", () => {
 		scrollContainer.scrollBy({ left: -cardWidth, behavior: "smooth" });
@@ -277,70 +289,133 @@
 				loginMsg.className = "text-red-600 text-center mt-3 text-sm";
 			}
 		});
-		// Coordenadas centrales de Oberá
+		// Coordenadas principales
 		const oberaCoords = [-27.485238, -55.120191];
 
-		// Inicializar mapa fijo
+		// Inicializar mapa
 		const map = L.map('map', {
 			center: oberaCoords,
 			zoom: 13,
-			dragging: true,      // el mapa no se puede mover
-			scrollWheelZoom: true, 
+			dragging: true,
+			scrollWheelZoom: true,
 			doubleClickZoom: false,
 			boxZoom: false,
 			zoomControl: true
 		});
 
-		// Capa de OpenStreetMap
+		// Capa base
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '&copy; OpenStreetMap contributors'
 		}).addTo(map);
 
-		// Marcadores de lugares importantes
-		const lugares = [
-			{ name: "Sede Barrial: Barrio Ecológico", coords: [-27.498867, -55.104017], description: "Profesor: Orlando Villalba IV DAN<br>Telf: 3755-448032", ciudad: "Oberá" },
-			{ name: "Sede Social", coords: [-27.4815, -55.0375], description: "Sede social de Oberá", ciudad: "Oberá" },
-			{ name: "Dojo Campo Viera", coords: [-27.3167, -55.045], description: "Sede de Campo Viera", ciudad: "Campo Viera" }
-		];
+		// Datos de sedes
+		let lugares = [];
+
+		async function cargarSedes() {
+			try {
+				const res = await fetch("/sedes");
+				const data = await res.json();
+
+				lugares = data.map(s => ({
+					name: s.nombre,
+					coords: [parseFloat(s.lat), parseFloat(s.lng)],
+					description: s.descripcion.replace(/\n/g, "<br>"),
+					ciudad: s.ciudad
+				}));
+
+				const ciudadesUnicas = [...new Set(lugares.map(l => l.ciudad))].sort();
+
+				const ciudadSelect = document.getElementById("ciudad");
+				ciudadSelect.innerHTML = "";
+				ciudadesUnicas.forEach(ciudad => {
+					const opt = document.createElement("option");
+					opt.value = ciudad;
+					opt.textContent = ciudad;
+					ciudadSelect.appendChild(opt);
+				});
+
+				// 👇 por defecto mostrar Oberá
+				if (ciudadesUnicas.includes("Oberá")) {
+					document.getElementById("ciudad").value = "Oberá";
+					mostrarSedes("Oberá");
+				} else {
+					mostrarSedes(ciudadesUnicas[0]);
+				}
+
+				// 👇 ahora sí intentar geolocalizar
+				detectarUbicacion();
+			} catch (err) {
+				console.error("Error al cargar sedes:", err);
+			}
+		}
+
+
 		const markerLayer = L.layerGroup().addTo(map);
 
+		// Función para mostrar sedes según ciudad
 		function mostrarSedes(ciudad) {
-			markerLayer.clearLayers(); // limpiar marcadores anteriores
-			const sedes = lugares.filter(l => l.ciudad === ciudad);
+			console.log("llego 1");
+			markerLayer.clearLayers();
+
+			const ciudadNormalized = ciudad.trim().toLowerCase();
+
+			console.log("Mostrando sedes para ciudad:", ciudadNormalized); // Depuración
+			console.log("Lugares cargados:", lugares.map(l => l.ciudad)); // Depuración
+
+			const sedes = lugares.filter(l => l.ciudad.trim().toLowerCase() === ciudadNormalized);
 
 			sedes.forEach(lugar => {
 				L.marker(lugar.coords)
-				.addTo(markerLayer)
-				.bindPopup(`<strong>${lugar.name}</strong><br>${lugar.description}<br>
-				<a href="https://www.google.com/maps?q=${lugar.coords[0]},${lugar.coords[1]}" target="_blank">Ver en Google Maps</a>`);
+					.addTo(markerLayer)
+					.bindPopup(`<strong>${lugar.name}</strong><br>${lugar.description}<br>
+								<a href="https://www.google.com/maps?q=${lugar.coords[0]},${lugar.coords[1]}" target="_blank">Ver en Google Maps</a>`);
 			});
-		}
-		if (navigator.geolocation) {
-		navigator.geolocation.getCurrentPosition(
-			(position) => {
-			const lat = position.coords.latitude;
-			const lon = position.coords.longitude;
 
-			// Aproximación para Campo Viera
-			if (Math.abs(lat - -27.3167) < 0.1 && Math.abs(lon - -55.045) < 0.1) {
-				map.setView([-27.3167, -55.045], 13);
-				mostrarSedes("Campo Viera");
-			} else {
-				map.setView([-27.485238, -55.120191], 13);
-				mostrarSedes("Oberá");
-			}
-			},
-			() => {
-			// Usuario no acepta geolocalización
-			map.setView([-27.485238, -55.120191], 13);
-			mostrarSedes("Oberá");
-			}
-		);
-		} else {
-		// Si el navegador no soporta geolocalización
-		map.setView([-27.485238, -55.120191], 13);
-		mostrarSedes("Oberá");
+			// Centrar mapa en la primera sede de la ciudad
+			map.setView(sedes[0].coords, 13);
 		}
+
+
+		// Función de geolocalización
+		function detectarUbicacion() {
+			if (!navigator.geolocation) return;
+
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					const lat = position.coords.latitude;
+					const lon = position.coords.longitude;
+
+					let ciudadDetectada = null;
+					let minDist = Infinity;
+
+					lugares.forEach(l => {
+						const dist = Math.sqrt(Math.pow(lat - l.coords[0], 2) + Math.pow(lon - l.coords[1], 2));
+						if (dist < minDist) {
+							minDist = dist;
+							ciudadDetectada = l.ciudad;
+						}
+					});
+
+					// Solo usar si está dentro de 0.1° (~11 km)
+					if (ciudadDetectada && minDist <= 0.1) {
+						document.getElementById("ciudad").value = ciudadDetectada;
+						mostrarSedes(ciudadDetectada);
+					}
+					// Si no, se queda en Oberá
+				},
+				(err) => {
+					console.warn("Geolocalización no permitida:", err);
+				}
+			);
+		}
+
+
+		document.getElementById("ciudad").addEventListener("change", (e) => {
+			mostrarSedes(e.target.value);
+		});
+		document.addEventListener("DOMContentLoaded", () => {
+			cargarSedes();
+		});
 	</script>
 </body>
 <footer class="bg-cyan-800 text-white py-1 mt-10">
