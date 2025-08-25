@@ -1,476 +1,455 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Insaeng - TKD</title>
-	<script src="https://cdn.tailwindcss.com"></script>
-	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.css"/>
-<style>
-	/* Efecto neón amarillo desde los bordes para noticias importantes */
-	.news-card {
-		border-radius: 1rem;
-		overflow: hidden;
-		transform: scale(1);
-		transition: transform 0.3s; 
-		flex: 0 0 25%;
-		min-width: 0;
-	}
-	.news-card.importante {
-		position: relative;
-	}
-	.news-card.importante::before {
-		content: "";
-		position: absolute;
-		top: 0; left: 0; right: 0; bottom: 0;
-		border-radius: 1rem;
-		pointer-events: none;
-		opacity: 0;
-		transition: opacity 0.3s;
-		box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8) inset;
-	}
-	.news-card.importante:hover::before {
-		opacity: 1;
-	}
-	.news-card:hover {
-		transform: scale(1.05);
-		z-index: 10;
-	}
-	#newsContainer::-webkit-scrollbar {
-	display: none;
-	}
-	#newsContainer {
-	-ms-overflow-style: none;  /* IE y Edge */
-	scrollbar-width: none;     /* Firefox */
-	}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Insaeng - TKD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-</style>
+  <!-- Leaflet CSS (solo una vez) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- (Opcional) geosearch CSS si lo usas -->
+  <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.css"/> -->
+
+  <style>
+	.news-card {
+	  border-radius: 1rem;
+	  overflow: hidden;
+	  transform: scale(1);
+	  transition: transform 0.3s;
+	  flex: 0 0 25%;
+	  min-width: 0;
+	}
+	.news-card.importante { position: relative; }
+	.news-card.importante::before {
+	  content: "";
+	  position: absolute; inset: 0;
+	  border-radius: 1rem; pointer-events: none; opacity: 0;
+	  transition: opacity 0.3s;
+	  box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8) inset;
+	}
+	.news-card.importante:hover::before { opacity: 1; }
+	.news-card:hover { transform: scale(1.05); z-index: 10; }
+	#newsContainer::-webkit-scrollbar { display: none; }
+	#newsContainer { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
 <body class="bg-gray-200 dark:bg-gray-200 text-gray-900 dark:text-gray-900">
 
-	<!-- NAVBAR -->
-	<header class="bg-slate-50 text-white p-1 flex justify-between items-center shadow-md">
-		<div class="flex items-center space-x-2">
-			<img src="imgs/logo_whitea.png" alt="Logo" class="h-8 sm:h-20 md:h-25 w-auto">
-			<h1 class="text-black text-xl font-bold">INSAENG</h1>
-		</div>
-		<nav id="navbar" class="flex space-x-4 text-black px-4">
-			<a href="#inicio" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Inicio</a>
-			<a href="cuenta.html" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Cuenta</a>
-			<a href="#" id="navLoginBtn" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Login</a>
-		</nav>
-	</header>
+  <!-- NAVBAR -->
+  <header class="bg-slate-50 text-white p-1 flex justify-between items-center shadow-md">
+	<div class="flex items-center space-x-2">
+	  <img src="imgs/logo_whitea.png" alt="Logo" class="h-8 sm:h-20 md:h-25 w-auto">
+	  <h1 class="text-black text-xl font-bold">INSAENG</h1>
+	</div>
+	<nav id="navbar" class="flex space-x-4 text-black px-4">
+	  <a href="#inicio" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Inicio</a>
+	  <a href="cuenta.html" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Cuenta</a>
+	  <a href="#" id="navLoginBtn" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Login</a>
+	</nav>
+  </header>
 
-	<!-- PRESENTACIÓN -->
-	<section id="inicio" class="p-6 text-center max-w-4xl mx-auto">
-		<h2 class="text-3xl md:text-4xl font-extrabold mb-4">Escuela de Taekwondo-INSAENG</h2>
-		<p class="text-lg md:text-xl leading-relaxed">
-			Este texto no se que poner acá, ya se me va a ocurrir algo.
-		</p>
+  <!-- PRESENTACIÓN -->
+  <section id="inicio" class="p-6 text-center max-w-4xl mx-auto">
+	<h2 class="text-3xl md:text-4xl font-extrabold mb-4">Escuela de Taekwondo-INSAENG</h2>
+	<p class="text-lg md:text-xl leading-relaxed">
+	  Este texto no se que poner acá, ya se me va a ocurrir algo.
+	</p>
+  </section>
+
+  <!-- NOTICIAS -->
+  <div class="relative max-w-6xl mx-auto">
+	<button id="scrollLeft" class="absolute -left-6 top-1/2 transform -translate-y-1/2 bg-cyan-800 text-white p-2 rounded-full z-10 hover:bg-cyan-600">&#8592;</button>
+	<section id="noticias" class="p-6">
+	  <h2 class="text-2xl font-bold mb-4 text-center">Noticias</h2>
+	  <div id="newsContainer" class="flex overflow-x-auto gap-3 py-4 scroll-smooth"></div>
 	</section>
+	<button id="scrollRight" class="absolute -right-6 top-1/2 transform -translate-y-1/2 bg-cyan-800 text-white p-2 rounded-full z-10 hover:bg-cyan-600">&#8594;</button>
+  </div>
 
-	<!-- NOTICIAS -->
-	<div class="relative max-w-6xl mx-auto">
-		<!-- Flecha izquierda -->
-		<button id="scrollLeft" class="absolute -left-6 top-1/2 transform -translate-y-1/2 bg-cyan-800 text-white p-2 rounded-full z-10 hover:bg-cyan-600">
-			&#8592;
-		</button>
-		<section id="noticias" class="p-6">
-			<h2 class="text-2xl font-bold mb-4 text-center">Noticias</h2>
-			<div id="newsContainer" class="flex overflow-x-auto gap-3 py-4 scroll-smooth"></div>
-		</section>
-		<!-- Flecha derecha -->
-		<button id="scrollRight" class="absolute -right-6 top-1/2 transform -translate-y-1/2 bg-cyan-800 text-white p-2 rounded-full z-10 hover:bg-cyan-600">
-		&#8594;
-		</button>
+  <!-- LOGIN FLOTANTE -->
+  <div id="loginModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
+	<div class="bg-white dark:bg-gray-300 p-6 rounded-2xl shadow-md w-96 relative">
+	  <button onclick="closeLogin()" class="absolute top-2 right-2 text-gray-700 dark:text-gray-900 font-bold">&times;</button>
+	  <h2 class="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
+	  <form id="loginForm" class="space-y-4">
+		<label class="block">Email</label>
+		<input type="email" name="email" required class="w-full p-2 border rounded dark:bg-gray-400">
+		<label class="block">Contraseña</label>
+		<input type="password" name="password" required class="w-full p-2 border rounded dark:bg-gray-400">
+		<button type="submit" class="w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-400">Ingresar</button>
+		<p id="loginMsg" class="text-center mt-3 text-sm"></p>
+	  </form>
 	</div>
+  </div>
 
-	<!-- LOGIN FLOTANTE -->
-	<div id="loginModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
-		<div class="bg-white dark:bg-gray-300 p-6 rounded-2xl shadow-md w-96 relative">
-			<button onclick="closeLogin()" class="absolute top-2 right-2 text-gray-700 dark:text-gray-900 font-bold">&times;</button>
-			<h2 class="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
-			<form id="loginForm" class="space-y-4">
-				<label class="block">Email</label>
-				<input type="email" name="email" required class="w-full p-2 border rounded dark:bg-gray-400">
-				<label class="block">Contraseña</label>
-				<input type="password" name="password" required class="w-full p-2 border rounded dark:bg-gray-400">
-				<button type="submit" class="w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-400">Ingresar</button>
-				<p id="loginMsg" class="text-center mt-3 text-sm"></p>
-			</form>
-		</div>
+  <!-- MODAL DE NOTICIA -->
+  <div id="newsModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
+	<div class="bg-white dark:bg-gray-400 rounded-2xl shadow-md w-1/2 p-6 relative max-h-[80vh] overflow-auto">
+	  <button onclick="closeNewsModal()" class="absolute top-4 right-4 text-gray-700 dark:text-gray-200 font-bold text-2xl hover:text-red-600">&times;</button>
+	  <h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
+	  <img id="modalImage" class="w-full h-64 object-cover rounded mb-4" alt="Noticia" />
+	  <p id="modalText" class="text-base"></p>
 	</div>
-	<!-- MODAL DE NOTICIA -->
-	<div id="newsModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
-		<div class="bg-white dark:bg-gray-400 rounded-2xl shadow-md w-1/2 p-6 relative max-h-[80vh] overflow-auto">
-			<button onclick="closeNewsModal()" class="absolute top-4 right-4 text-gray-700 dark:text-gray-200 font-bold text-2xl hover:text-red-600">&times;</button>
-			<h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
-			<img id="modalImage" class="w-full h-64 object-cover rounded mb-4" alt="Noticia">
-			<p id="modalText" class="text-base"></p>
-		</div>
-	</div>
-	<!-- Albumes de Fotos -->
-	<section id="albumes" class="p-6 text-center max-w-6xl mx-auto hidden">
-    	<h2 class="text-2xl font-bold mb-4">Álbumes de Fotos</h2>
-    	<div id="albumContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-	</section>
+  </div>
 
+  <!-- Albumes de Fotos -->
+  <section id="albumes" class="p-6 text-center max-w-6xl mx-auto hidden">
+	<h2 class="text-2xl font-bold mb-4">Álbumes de Fotos</h2>
+	<div id="albumContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+  </section>
 
-	<!-- MAPA -->
-	<section id="mapa" class="p-6 text-center max-w-4xl mx-auto">
+  <!-- MAPA -->
+  <section id="mapa" class="p-6 text-center max-w-4xl mx-auto">
 	<h2 class="text-2xl font-bold mb-4">Mapa de Dojos Insaeng en tu ciudad</h2>
-
-	<!-- Selector de ciudad -->
 	<div class="mb-4">
-		<label for="ciudad" class="mr-2 font-semibold">Ver sedes en:</label>
-		<select id="ciudad" class="border rounded p-2"></select>
+	  <label for="ciudad" class="mr-2 font-semibold">Ver sedes en:</label>
+	  <select id="ciudad" class="border rounded p-2"></select>
 	</div>
-
 	<div id="map" class="mx-auto rounded shadow-md" style="width:400px; height:400px; margin: auto;"></div>
-	</section>
+  </section>
 
-	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-	<!-- ESTADO USUARIO -->
-	<div id="userStatus" class="text-center mt-4 font-semibold"></div>
-	<script>
-		document.addEventListener("keydown", (e) => {
-		if(e.key === "Escape") {
-			closeLogin();
-			closeNewsModal();
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- ESTADO USUARIO -->
+  <div id="userStatus" class="text-center mt-4 font-semibold"></div>
+
+  <script>
+	// ===== Utilidades =====
+	function randomColor(){ return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, "0"); }
+	function openLogin() { loginModal.classList.remove("hidden"); }
+	function closeLogin() { loginModal.classList.add("hidden"); }
+	function setToken(token) { localStorage.setItem("token", token); }
+	function logout() { localStorage.removeItem("token"); location.reload(); }
+
+	document.addEventListener("keydown", (e) => {
+	  if(e.key === "Escape") { closeLogin(); closeNewsModal(); }
+	});
+
+	// ===== Modal Noticias (seguro) =====
+	const newsModal = document.getElementById("newsModal");
+	const modalTitle = document.getElementById("modalTitle");
+	const modalImage = document.getElementById("modalImage");
+	const modalText = document.getElementById("modalText");
+
+	function openNewsModal(title, text, imageUrl) {
+	  modalTitle.textContent = title ?? "";
+	  modalText.textContent = text ?? "";
+	  if(!imageUrl || imageUrl === "#"){
+		modalImage.style.display = "none";
+		modalImage.removeAttribute("src");
+	  } else {
+		modalImage.src = imageUrl;
+		modalImage.style.display = "block";
+	  }
+	  newsModal.classList.remove("hidden");
+	}
+	function closeNewsModal() { newsModal.classList.add("hidden"); }
+
+	// ===== Referencias DOM =====
+	const newsContainer = document.getElementById("newsContainer");
+	const loginModal = document.getElementById("loginModal");
+	const navLoginBtn = document.getElementById("navLoginBtn");
+	const loginForm = document.getElementById("loginForm");
+	const loginMsg = document.getElementById("loginMsg");
+	const navbar = document.getElementById("navbar");
+	const userStatus = document.getElementById("userStatus");
+
+	navLoginBtn.addEventListener("click", openLogin);
+
+	// ===== News Card (sin innerHTML) =====
+	function addNewsCard(title, text, imageUrl, tipo) {
+	  const card = document.createElement("div");
+	  card.className = "news-card bg-white dark:bg-gray-300 shadow-md overflow-hidden p-0";
+	  if (tipo === 1) card.classList.add("importante");
+
+	  // Imagen / fondo
+	  let mediaWrapper = document.createElement("div");
+	  mediaWrapper.className = "w-full h-44 overflow-hidden flex items-center justify-center";
+
+	  if (!imageUrl || imageUrl === "#") {
+		mediaWrapper.style.backgroundColor = randomColor();
+	  } else {
+		const img = document.createElement("img");
+		img.src = imageUrl;
+		img.alt = title || "Noticia";
+		img.loading = "lazy";
+		img.className = "object-cover w-full h-full";
+		mediaWrapper.appendChild(img);
+	  }
+
+	  const content = document.createElement("div");
+	  content.className = "p-4";
+
+	  const h3 = document.createElement("h3");
+	  h3.className = "font-semibold text-lg mb-2";
+	  h3.textContent = title ?? "";
+
+	  const p = document.createElement("p");
+	  p.className = "text-sm line-clamp-3";
+	  p.textContent = text ?? "";
+
+	  content.appendChild(h3);
+	  content.appendChild(p);
+
+	  card.appendChild(mediaWrapper);
+	  card.appendChild(content);
+
+	  card.addEventListener("click", () => openNewsModal(title, text, imageUrl));
+	  newsContainer.appendChild(card);
+	}
+
+	// ===== Cargar noticias =====
+	async function loadNews() {
+	  try {
+		const res = await fetch("/news");
+		const newsListData = await res.json();
+		newsContainer.innerHTML = "";
+		newsListData.forEach(n => addNewsCard(n.title, n.text, n.imageUrl, n.tipo));
+	  } catch {
+		newsContainer.textContent = "No se pudieron cargar las noticias.";
+		newsContainer.classList.add("text-center", "text-red-600");
+	  }
+	}
+
+	// Scroll por card
+	const scrollContainer = document.getElementById("newsContainer");
+	function getCardWidth(){ return scrollContainer.querySelector(".news-card")?.offsetWidth || 300; }
+	document.getElementById("scrollLeft").addEventListener("click", () => {
+	  scrollContainer.scrollBy({ left: -getCardWidth(), behavior: "smooth" });
+	});
+	document.getElementById("scrollRight").addEventListener("click", () => {
+	  scrollContainer.scrollBy({ left: getCardWidth(), behavior: "smooth" });
+	});
+
+	// ===== UI según sesión (solo para mostrar/ocultar) =====
+	function updateUIForLoggedUser(payload) {
+	  loginModal.classList.add("hidden");
+	  navLoginBtn.style.display = "none";
+
+	  let sobrenombre = "";
+	  if(payload.nivel >= 11 && payload.nivel <= 13) sobrenombre = "Sabon ";
+	  else if(payload.nivel >= 14 && payload.nivel <= 16) sobrenombre = "Sabon-Nim ";
+	  else if(payload.nivel >= 17 && payload.nivel <= 18) sobrenombre = "Sagium-Nim ";
+	  else if(payload.nivel == 17) sobrenombre = "Sasong-Nim ";
+
+	  userStatus.textContent = `Has iniciado sesión como: ${sobrenombre}${payload.nombre}`;
+
+	  // quitar botones previos de sesión
+	  document.querySelectorAll("#navbar .sessionBtn").forEach(el => el.remove());
+
+	  const actionBtn = document.createElement("a");
+	  actionBtn.className = "sessionBtn px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors";
+
+	  if(payload.nivel >= 11) {
+		actionBtn.href = "admin.html";
+		actionBtn.textContent = "Admin";
+	  } else {
+		actionBtn.href = "#";
+		actionBtn.textContent = "Logout";
+		actionBtn.addEventListener("click", logout);
+	  }
+	  navbar.appendChild(actionBtn);
+	}
+
+	// Cargar token (con check de expiración para UI)
+	(function bootstrapAuthUI(){
+	  const token = localStorage.getItem("token");
+	  if(!token) return;
+	  try {
+		const payload = JSON.parse(atob(token.split(".")[1]));
+		if (payload?.exp && Date.now()/1000 > payload.exp) {
+		  localStorage.removeItem("token");
+		  return;
 		}
-		});
-		//- Modal de Noticias
-		const newsModal = document.getElementById("newsModal");
-		const modalTitle = document.getElementById("modalTitle");
-		const modalImage = document.getElementById("modalImage");
-		const modalText = document.getElementById("modalText");
+		updateUIForLoggedUser(payload);
+	  } catch {
+		localStorage.removeItem("token");
+	  }
+	})();
 
-		function openNewsModal(title, text, imageUrl) {
-		modalTitle.textContent = title;
-		modalText.textContent = text;
-		if(!imageUrl || imageUrl === "#"){
-			modalImage.style.display = "none";
+	// ===== Login =====
+	loginForm.addEventListener("submit", async e => {
+	  e.preventDefault();
+	  const email = loginForm.email.value;
+	  const password = loginForm.password.value;
+
+	  try {
+		const res = await fetch("/login", {
+		  method: "POST",
+		  headers: { "Content-Type": "application/json" },
+		  body: JSON.stringify({ email, password })
+		});
+		const result = await res.json();
+
+		if(res.ok) {
+		  setToken(result.token);
+		  const payload = JSON.parse(atob(result.token.split(".")[1]));
+		  updateUIForLoggedUser(payload);
+		  loginMsg.textContent = "";
 		} else {
-			modalImage.src = imageUrl;
-			modalImage.style.display = "block";
+		  loginMsg.textContent = typeof result === "string" ? result : (result?.message || "Error de login");
+		  loginMsg.className = "text-red-600 text-center mt-3 text-sm";
 		}
-		newsModal.classList.remove("hidden");
-		}
+	  } catch {
+		loginMsg.textContent = "Error de conexión.";
+		loginMsg.className = "text-red-600 text-center mt-3 text-sm";
+	  }
+	});
 
-		function closeNewsModal() {
-		newsModal.classList.add("hidden");
-		}
-		//
-		const newsContainer = document.getElementById("newsContainer");
-		const loginModal = document.getElementById("loginModal");
-		const navLoginBtn = document.getElementById("navLoginBtn");
-		const loginForm = document.getElementById("loginForm");
-		const loginMsg = document.getElementById("loginMsg");
-		const navbar = document.getElementById("navbar");
-		const userStatus = document.getElementById("userStatus");
+	// ===== Mapa =====
+	const oberaCoords = [-27.485238, -55.120191];
+	const map = L.map('map', {
+	  center: oberaCoords, zoom: 13,
+	  dragging: true, scrollWheelZoom: true,
+	  doubleClickZoom: false, boxZoom: false, zoomControl: true
+	});
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	  attribution: '&copy; OpenStreetMap contributors'
+	}).addTo(map);
 
-		function openLogin() { loginModal.classList.remove("hidden"); }
-		function closeLogin() { loginModal.classList.add("hidden"); }
-		function setToken(token) { localStorage.setItem("token", token); }
-		function logout() { localStorage.removeItem("token"); location.reload(); }
+	let lugares = [];
+	const markerLayer = L.layerGroup().addTo(map);
 
-		navLoginBtn.addEventListener("click", openLogin);
+	async function cargarSedes() {
+	  try {
+		const res = await fetch("/sedes");
+		const data = await res.json();
 
-		// Función para color aleatorio
-		function randomColor(){ return '#' + Math.floor(Math.random()*16777215).toString(16); }
+		lugares = data.map(s => ({
+		  name: s.nombre,
+		  coords: [parseFloat(s.lat), parseFloat(s.lng)],
+		  description: (s.descripcion || "").replace(/\n/g, "<br>"),
+		  ciudad: s.ciudad
+		}));
 
-		// Función para crear cards de noticias
-		function addNewsCard(title, text, imageUrl, tipo) {
-			const div = document.createElement("div");
-			div.className = "news-card bg-white dark:bg-gray-300 shadow-md overflow-hidden p-0 " + (tipo === 1 ? "importante" : "");
-			const imageContent = (!imageUrl || imageUrl === "#")
-				? `<div class="w-full h-44 flex items-center justify-center" style="background-color:${randomColor()};"></div>`
-				: `<div class="w-full h-44 overflow-hidden flex items-center justify-center">
-						<img src="${imageUrl}" alt="${title}" class="object-cover w-full h-full">
-					</div>`;
-			div.innerHTML = `
-				${imageContent}
-				<div class="p-4">
-					<h3 class="font-semibold text-lg mb-2">${title}</h3>
-					<p class="text-sm line-clamp-3">${text}</p>
-				</div>
-			`;
-			// Abrir modal al hacer click
-			div.addEventListener("click", () => openNewsModal(title, text, imageUrl));
-			//
-			newsContainer.appendChild(div);
-		}
-
-		// Cargar noticias desde backend
-		async function loadNews() {
-			try {
-				const res = await fetch("/news");
-				const newsListData = await res.json();
-				newsContainer.innerHTML = "";
-				newsListData.forEach(n => {
-					addNewsCard(n.title, n.text, n.imageUrl, n.tipo);
-				});
-			} catch {
-				newsContainer.innerHTML = "<p class='text-center text-red-600'>No se pudieron cargar las noticias.</p>";
-			}
-		}
-		const scrollContainer = document.getElementById("newsContainer");
-		const cardWidth = scrollContainer.querySelector('.news-card')?.offsetWidth || 300;
-
-		document.getElementById("scrollLeft").addEventListener("click", () => {
-		scrollContainer.scrollBy({ left: -cardWidth, behavior: "smooth" });
+		const ciudadesUnicas = [...new Set(lugares.map(l => l.ciudad))].sort();
+		const ciudadSelect = document.getElementById("ciudad");
+		ciudadSelect.innerHTML = "";
+		ciudadesUnicas.forEach(ciudad => {
+		  const opt = document.createElement("option");
+		  opt.value = ciudad;
+		  opt.textContent = ciudad;
+		  ciudadSelect.appendChild(opt);
 		});
 
-		document.getElementById("scrollRight").addEventListener("click", () => {
-		scrollContainer.scrollBy({ left: cardWidth, behavior: "smooth" });
+		if (ciudadesUnicas.includes("Oberá")) {
+		  ciudadSelect.value = "Oberá";
+		  mostrarSedes("Oberá");
+		} else if (ciudadesUnicas[0]) {
+		  mostrarSedes(ciudadesUnicas[0]);
+		}
+
+		detectarUbicacion();
+	  } catch (err) {
+		console.error("Error al cargar sedes:", err);
+	  }
+	}
+
+	function mostrarSedes(ciudad) {
+	  markerLayer.clearLayers();
+	  const ciudadNormalized = (ciudad || "").trim().toLowerCase();
+	  const sedes = lugares.filter(l => (l.ciudad || "").trim().toLowerCase() === ciudadNormalized);
+	  if (sedes.length === 0) return;
+
+	  sedes.forEach(lugar => {
+		L.marker(lugar.coords)
+		  .addTo(markerLayer)
+		  .bindPopup(
+			`<strong>${(lugar.name||"").replace(/[<>&]/g, s=>({ '<':'&lt;','>':'&gt;','&':'&amp;' }[s]))}</strong><br>${lugar.description}<br>
+			<a href="https://www.google.com/maps?q=${lugar.coords[0]},${lugar.coords[1]}" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a>`
+		  );
+	  });
+	  map.setView(sedes[0].coords, 13);
+	}
+
+	function detectarUbicacion() {
+	  if (!navigator.geolocation) return;
+	  navigator.geolocation.getCurrentPosition(
+		(position) => {
+		  const lat = position.coords.latitude;
+		  const lon = position.coords.longitude;
+
+		  let ciudadDetectada = null;
+		  let minDist = Infinity;
+
+		  lugares.forEach(l => {
+			const dist = Math.hypot(lat - l.coords[0], lon - l.coords[1]);
+			if (dist < minDist) { minDist = dist; ciudadDetectada = l.ciudad; }
+		  });
+
+		  if (ciudadDetectada && minDist <= 0.1) {
+			document.getElementById("ciudad").value = ciudadDetectada;
+			mostrarSedes(ciudadDetectada);
+		  }
+		},
+		(err) => { console.warn("Geolocalización no permitida:", err); }
+	  );
+	}
+
+	document.getElementById("ciudad").addEventListener("change", (e) => {
+	  mostrarSedes(e.target.value);
+	});
+
+	// ===== Álbumes (con rel noopener y alt/lazy) =====
+	async function cargarAlbumes() {
+	  try {
+		const res = await fetch("/albumes");
+		const data = await res.json();
+		const albumSection = document.getElementById("albumes");
+		const albumContainer = document.getElementById("albumContainer");
+
+		albumContainer.innerHTML = "";
+		if (!Array.isArray(data) || data.length === 0) {
+		  albumSection.classList.add("hidden");
+		  return;
+		}
+		albumSection.classList.remove("hidden");
+
+		data.forEach(album => {
+		  const albumDiv = document.createElement("div");
+		  albumDiv.className = "bg-white dark:bg-gray-300 rounded-xl shadow-md p-4 flex flex-col items-center";
+
+		  const title = document.createElement("h3");
+		  title.textContent = album.nombre || "Álbum";
+		  title.className = "font-semibold text-lg mb-2";
+		  albumDiv.appendChild(title);
+
+		  const fotosDiv = document.createElement("div");
+		  fotosDiv.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
+
+		  (album.fotos || []).forEach(link => {
+			const a = document.createElement("a");
+			a.href = link;
+			a.target = "_blank";
+			a.rel = "noopener noreferrer";
+
+			const img = document.createElement("img");
+			img.src = link;
+			img.alt = (album.nombre || "Álbum") + " foto";
+			img.loading = "lazy";
+			img.className = "w-full h-32 object-cover rounded";
+			a.appendChild(img);
+
+			fotosDiv.appendChild(a);
+		  });
+
+		  albumDiv.appendChild(fotosDiv);
+		  albumContainer.appendChild(albumDiv);
 		});
+	  } catch(err) {
+		console.error("Error al cargar álbumes:", err);
+	  }
+	}
 
-
-
-		loadNews();
-
-		// Actualizar UI según sesión
-		function updateUIForLoggedUser(payload) {
-			loginModal.classList.add("hidden");
-			navLoginBtn.style.display = "none";
-			let sobrenombre;
-			if(payload.nivel >= 11 && payload.nivel <= 13) sobrenombre = "Sabon ";
-			else if(payload.nivel >= 14 && payload.nivel <= 16) sobrenombre = "Sabon-Nim ";
-			else if(payload.nivel >= 17 && payload.nivel <= 18) sobrenombre = "Sagium-Nim ";
-			else if(payload.nivel == 17) sobrenombre = "Sasong-Nim ";
-			else sobrenombre = "";
-			userStatus.textContent = `Has iniciado sesión como: ${sobrenombre}${payload.nombre}`;
- 			document.querySelectorAll("#navbar .sessionBtn").forEach(el => el.remove());
-			const actionBtn = document.createElement("a");
-			actionBtn.className = "px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors";
-
-			if(payload.nivel >= 11) {
-				actionBtn.href = "admin.html";
-				actionBtn.textContent = "Admin";
-			} else {
-				actionBtn.href = "#";
-				actionBtn.textContent = "Logout";
-				actionBtn.addEventListener("click", logout);
-			}
-			navbar.appendChild(actionBtn);
-		}
-
-		// Verificar si ya hay token
-		const token = localStorage.getItem("token");
-		if(token) {
-			try {
-				const payload = JSON.parse(atob(token.split(".")[1]));
-				updateUIForLoggedUser(payload);
-			} catch {
-				localStorage.removeItem("token");
-			}
-		}
-
-		// Login
-		loginForm.addEventListener("submit", async e => {
-			e.preventDefault();
-			const email = loginForm.email.value;
-			const password = loginForm.password.value;
-
-			try {
-				const res = await fetch("/login", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ email, password })
-				});
-				const result = await res.json();
-
-				if(res.ok) {
-					setToken(result.token);
-					const payload = JSON.parse(atob(result.token.split(".")[1]));
-					updateUIForLoggedUser(payload);
-					loginMsg.textContent = "";
-				} else {
-					loginMsg.textContent = result;
-					loginMsg.className = "text-red-600 text-center mt-3 text-sm";
-				}
-			} catch {
-				loginMsg.textContent = "Error de conexión.";
-				loginMsg.className = "text-red-600 text-center mt-3 text-sm";
-			}
-		});
-		// Coordenadas principales
-		const oberaCoords = [-27.485238, -55.120191];
-
-		// Inicializar mapa
-		const map = L.map('map', {
-			center: oberaCoords,
-			zoom: 13,
-			dragging: true,
-			scrollWheelZoom: true,
-			doubleClickZoom: false,
-			boxZoom: false,
-			zoomControl: true
-		});
-
-		// Capa base
-		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			attribution: '&copy; OpenStreetMap contributors'
-		}).addTo(map);
-
-		// Datos de sedes
-		let lugares = [];
-
-		async function cargarSedes() {
-			try {
-				const res = await fetch("/sedes");
-				const data = await res.json();
-
-				lugares = data.map(s => ({
-					name: s.nombre,
-					coords: [parseFloat(s.lat), parseFloat(s.lng)],
-					description: s.descripcion.replace(/\n/g, "<br>"),
-					ciudad: s.ciudad
-				}));
-
-				const ciudadesUnicas = [...new Set(lugares.map(l => l.ciudad))].sort();
-
-				const ciudadSelect = document.getElementById("ciudad");
-				ciudadSelect.innerHTML = "";
-				ciudadesUnicas.forEach(ciudad => {
-					const opt = document.createElement("option");
-					opt.value = ciudad;
-					opt.textContent = ciudad;
-					ciudadSelect.appendChild(opt);
-				});
-
-				// 👇 por defecto mostrar Oberá
-				if (ciudadesUnicas.includes("Oberá")) {
-					document.getElementById("ciudad").value = "Oberá";
-					mostrarSedes("Oberá");
-				} else {
-					mostrarSedes(ciudadesUnicas[0]);
-				}
-
-				// 👇 ahora sí intentar geolocalizar
-				detectarUbicacion();
-			} catch (err) {
-				console.error("Error al cargar sedes:", err);
-			}
-		}
-
-
-		const markerLayer = L.layerGroup().addTo(map);
-
-		// Función para mostrar sedes según ciudad
-		function mostrarSedes(ciudad) {
-			console.log("llego 1");
-			markerLayer.clearLayers();
-
-			const ciudadNormalized = ciudad.trim().toLowerCase();
-
-			console.log("Mostrando sedes para ciudad:", ciudadNormalized); // Depuración
-			console.log("Lugares cargados:", lugares.map(l => l.ciudad)); // Depuración
-
-			const sedes = lugares.filter(l => l.ciudad.trim().toLowerCase() === ciudadNormalized);
-
-			sedes.forEach(lugar => {
-				L.marker(lugar.coords)
-					.addTo(markerLayer)
-					.bindPopup(`<strong>${lugar.name}</strong><br>${lugar.description}<br>
-								<a href="https://www.google.com/maps?q=${lugar.coords[0]},${lugar.coords[1]}" target="_blank">Ver en Google Maps</a>`);
-			});
-
-			// Centrar mapa en la primera sede de la ciudad
-			map.setView(sedes[0].coords, 13);
-		}
-
-
-		// Función de geolocalización
-		function detectarUbicacion() {
-			if (!navigator.geolocation) return;
-
-			navigator.geolocation.getCurrentPosition(
-				(position) => {
-					const lat = position.coords.latitude;
-					const lon = position.coords.longitude;
-
-					let ciudadDetectada = null;
-					let minDist = Infinity;
-
-					lugares.forEach(l => {
-						const dist = Math.sqrt(Math.pow(lat - l.coords[0], 2) + Math.pow(lon - l.coords[1], 2));
-						if (dist < minDist) {
-							minDist = dist;
-							ciudadDetectada = l.ciudad;
-						}
-					});
-
-					// Solo usar si está dentro de 0.1° (~11 km)
-					if (ciudadDetectada && minDist <= 0.1) {
-						document.getElementById("ciudad").value = ciudadDetectada;
-						mostrarSedes(ciudadDetectada);
-					}
-					// Si no, se queda en Oberá
-				},
-				(err) => {
-					console.warn("Geolocalización no permitida:", err);
-				}
-			);
-		}
-
-		document.getElementById("ciudad").addEventListener("change", (e) => {
-			mostrarSedes(e.target.value);
-		});
-
-		async function cargarAlbumes() {
-			try {
-				const res = await fetch("/albumes");
-				const data = await res.json();
-				const albumSection = document.getElementById("albumes");
-				const albumContainer = document.getElementById("albumContainer");
-				
-				albumContainer.innerHTML = "";
-				if (data.length === 0) { albumSection.classList.add("hidden"); return; }
-				albumSection.classList.remove("hidden");
-
-				data.forEach(album => {
-					const albumDiv = document.createElement("div");
-					albumDiv.className = "bg-white dark:bg-gray-300 rounded-xl shadow-md p-4 flex flex-col items-center";
-
-					// Título
-					const title = document.createElement("h3");
-					title.textContent = album.nombre;
-					title.className = "font-semibold text-lg mb-2";
-					albumDiv.appendChild(title);
-
-					// Contenedor de fotos
-					const fotosDiv = document.createElement("div");
-					fotosDiv.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
-
-					album.fotos.forEach(link => {
-						const a = document.createElement("a");
-						a.href = link;        // El link ya está limpio
-						a.target = "_blank";
-
-						const img = document.createElement("img");
-						img.src = link;       // Usamos la misma URL como imagen
-						img.className = "w-full h-32 object-cover rounded";
-						a.appendChild(img);
-
-						fotosDiv.appendChild(a);
-					});
-
-					albumDiv.appendChild(fotosDiv);
-					albumContainer.appendChild(albumDiv);
-				});
-			} catch(err) {
-				console.error("Error al cargar álbumes:", err);
-			}
-		}
-
-
-		document.addEventListener("DOMContentLoaded", () => {
-			cargarAlbumes();
-			cargarSedes();
-		});
-	</script>
+	// ===== Bootstrap =====
+	document.addEventListener("DOMContentLoaded", () => {
+	  loadNews();
+	  cargarAlbumes();
+	  cargarSedes();
+	});
+  </script>
 </body>
 <footer class="bg-cyan-800 text-white py-1 mt-10">
   <p class="text-center">Página oficial Escuela de Taekwondo Insaeng / © Developed by Insaeng Team</p>

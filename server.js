@@ -256,7 +256,7 @@ app.delete("/admin/users/:id", auth(), async (req, res) => {
 		if(rows.length === 0) { conn.release(); return res.status(404).send("Usuario no encontrado"); }
 		const hijo = rows[0];
 
-		if(hijo.superior_id !== req.user.id) {
+		if(hijo.superior_id !== req.user.id && req.user.nivel != 20) {
 			conn.release();
 			return res.status(403).send("No puedes eliminar este usuario");
 		}
@@ -282,13 +282,6 @@ app.patch("/admin/users/:id/role", auth(["administrador"]), async (req, res) => 
   res.send("✅ Rol actualizado.");
 });
 
-app.delete("/admin/users/:id", auth(["administrador"]), async (req, res) => {
-  const { id } = req.params;
-  const conn = await pool.getConnection();
-  await conn.query("DELETE FROM users WHERE id=?", [id]);
-  conn.release();
-  res.send("🗑️ Usuario eliminado.");
-});
 
 // --- Noticias ---
 // Obtener todas las noticias
