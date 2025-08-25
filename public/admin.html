@@ -44,6 +44,7 @@
 		<li><button id="dashboardBtn" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white">Dashboard</button></li>
 		<li><button id="createUserBtn" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white">Crear Usuario</button></li>
 		<li><button id="adminNewsBtn" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white">Crear/Editar Noticias</button></li>
+		<li><button id="btnAlbumes" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white">Álbumes</button></li>
 		<li><button id="adminRolesBtn" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white hidden">Modificar Roles</button></li>
 		<li><button id="btnAddSede" class="w-full text-left p-2 rounded hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:text-white hidden">Sedes/Mapa</button></li>
 	</ul>
@@ -103,8 +104,26 @@
 		</form>
 		<div id="newsList" class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"></div>
 		</div>
+		<!-- ALBUMES -->
+		<div id="adminAlbumes" class="hidden p-4">
+			<h2 class="text-xl font-bold mb-4">Gestión de Álbumes</h2>
+
+			<form id="albumForm" class="space-y-3 mb-4">
+				<input type="hidden" id="albumId">
+				<input type="text" id="albumNombre" placeholder="Nombre del álbum" class="w-full p-2 border rounded" required>
+				<textarea id="albumDescripcion" placeholder="Descripción" class="w-full p-2 border rounded"></textarea>
+				<textarea id="albumFotos" placeholder="[url=...][img]...[/img][/url], uno por línea" class="w-full p-2 border rounded"></textarea>
+				<div class="flex gap-2">
+				<button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Guardar</button>
+				<button type="button" id="cancelAlbumBtn" class="bg-gray-400 px-4 py-2 rounded hover:bg-gray-500">Cancelar</button>
+				</div>
+			</form>
+
+			<div id="albumesList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+		</div>
+
 		<!-- ROLES -->
-			<div id="adminRoles" class="hidden p-6 bg-white dark:bg-gray-300 rounded-2xl shadow-md">
+		<div id="adminRoles" class="hidden p-6 bg-white dark:bg-gray-300 rounded-2xl shadow-md">
 			<h2 class="text-xl font-semibold mb-4">Roles</h2>
 
 			<form id="createRoleForm" class="mb-4">
@@ -245,6 +264,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	// Mostrar dashboard
 	dashboard.classList.remove("hidden");
 	adminCreateForm.classList.add("hidden");
+	adminAlbumes.classList.add("hidden");
 	adminNews.classList.add("hidden");
 	adminRoles.classList.add("hidden");
 	adminSedes.classList.add("hidden");
@@ -257,9 +277,14 @@ window.addEventListener("DOMContentLoaded", () => {
 const dashboard = document.getElementById("dashboard");
 const adminCreateForm = document.getElementById("adminCreateForm");
 const adminNews = document.getElementById("adminNews");
-document.getElementById("dashboardBtn").onclick = async () => { dashboard.classList.remove("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); await loadDashboard(); };
-document.getElementById("createUserBtn").onclick = async ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.remove("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); await loadRolesOptions(); };
-document.getElementById("adminNewsBtn").onclick = ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.remove("hidden"); adminRoles.classList.add("hidden"); loadNews(); };
+const adminRoles = document.getElementById("adminRoles");
+const adminSedes = document.getElementById("adminSedes");
+document.getElementById("dashboardBtn").onclick = async () => { dashboard.classList.remove("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.add("hidden");await loadDashboard(); };
+document.getElementById("createUserBtn").onclick = async ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.remove("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.add("hidden"); await loadRolesOptions(); };
+document.getElementById("adminNewsBtn").onclick = ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.remove("hidden"); adminRoles.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.add("hidden"); loadNews(); };
+document.getElementById("btnAlbumes").onclick = ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.remove("hidden"); loadAlbumes(); };
+document.getElementById("adminRolesBtn").onclick = async ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.add("hidden"); adminRoles.classList.remove("hidden"); await loadRoles(); };
+document.getElementById("btnAddSede").onclick = ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); adminAlbumes.classList.add("hidden"); adminSedes.classList.remove("hidden"); loadSedes(); };
 
 // CREAR USUARIO
 const adminCreateMsg = document.getElementById("adminCreateMsg");
@@ -362,14 +387,6 @@ newsList.addEventListener("click", async e=>{
 });
 
 //ADMINISTRAR ROLES
-// Mostrar sección roles
-document.getElementById("adminRolesBtn").onclick = async ()=>{
-  dashboard.classList.add("hidden");
-  adminCreateForm.classList.add("hidden");
-  adminNews.classList.add("hidden");
-  adminRoles.classList.remove("hidden");
-  await loadRoles();
-};
 
 // Crear rol
 const roleMsg = document.getElementById("roleMsg");
@@ -974,14 +991,109 @@ cancelSedeBtn.onclick = () => {
 	sedeDescripcionInput.value = "";
 };
 
-// Mostrar la sección al hacer clic en el menú
-document.getElementById("btnAddSede").onclick = () => {
-    dashboard.classList.add("hidden");
-    adminCreateForm.classList.add("hidden");
-    adminNews.classList.add("hidden");
-    adminRoles.classList.add("hidden");
-    adminSedes.classList.remove("hidden");
-    loadSedes();
+// ---- Albumes ----
+const adminAlbumes = document.getElementById("adminAlbumes");
+const albumesList = document.getElementById("albumesList");
+const albumForm = document.getElementById("albumForm");
+const albumIdInput = document.getElementById("albumId");
+const albumNombreInput = document.getElementById("albumNombre");
+const albumDescripcionInput = document.getElementById("albumDescripcion");
+const albumFotosInput = document.getElementById("albumFotos");
+const cancelAlbumBtn = document.getElementById("cancelAlbumBtn");
+
+// Parsear links estilo [url=...][img]...[/img][/url]
+function parseFotoLinks(text) {
+  return text.split("\n").map(l => {
+    const match = l.match(/\[img\](.*?)\[\/img\]/);
+    return match ? match[1] : null;
+  }).filter(Boolean);
+}
+
+// Cargar álbumes
+async function loadAlbumes() {
+  albumesList.innerHTML = "Cargando...";
+  const res = await fetch("/albumes", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  if(!res.ok) return alert("Error al cargar álbumes");
+  const albums = await res.json();
+  albumesList.innerHTML = "";
+
+  albums.forEach(a => {
+    const div = document.createElement("div");
+    div.className = "p-4 border rounded shadow bg-white flex flex-col gap-2";
+    div.innerHTML = `
+      <span class="font-semibold">${a.nombre}</span>
+      <p>${a.descripcion || ""}</p>
+      <div class="flex gap-2 overflow-x-auto">
+        ${a.fotos.map(f => `<img src="${f}" class="h-20 rounded">`).join("")}
+      </div>
+      <div class="flex gap-2">
+        <button class="editAlbumBtn flex-1 bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">Editar</button>
+        <button class="delAlbumBtn flex-1 bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">Eliminar</button>
+      </div>
+    `;
+
+    div.querySelector(".editAlbumBtn").onclick = () => {
+      albumIdInput.value = a.id;
+      albumNombreInput.value = a.nombre;
+      albumDescripcionInput.value = a.descripcion || "";
+      albumFotosInput.value = a.fotos.map(f => `[url=${f}][img]${f}[/img][/url]`).join("\n");
+    };
+
+    div.querySelector(".delAlbumBtn").onclick = async () => {
+      if(!confirm(`Eliminar álbum "${a.nombre}"?`)) return;
+      const res = await fetch(`/albumes/${a.id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+      });
+      if(res.ok) loadAlbumes();
+      else alert(await res.text());
+    };
+
+    albumesList.appendChild(div);
+  });
+}
+
+// Guardar álbum
+albumForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const id = albumIdInput.value;
+  const fotos = parseFotoLinks(albumFotosInput.value);
+  const payload = {
+    nombre: albumNombreInput.value.trim(),
+    descripcion: albumDescripcionInput.value.trim(),
+    fotos
+  };
+
+  let res;
+  if(id) {
+    res = await fetch(`/albumes/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify(payload)
+    });
+  } else {
+    res = await fetch("/albumes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  if(res.ok) {
+    albumForm.reset();
+    albumIdInput.value = "";
+    loadAlbumes();
+  } else {
+    alert(await res.text());
+  }
+});
+
+// Cancelar
+cancelAlbumBtn.onclick = () => {
+  albumForm.reset();
+  albumIdInput.value = "";
 };
 
 </script>

@@ -775,6 +775,33 @@ app.post("/albumes", authNivel(13), async (req, res) => {
         res.status(500).send("Error al crear álbum");
     }
 });
+// Eliminar álbum (y sus fotos)
+app.delete("/albumes/:id", authNivel(13), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const conn = await pool.getConnection();
+
+        // Verificar si el álbum existe
+        const [rows] = await conn.query("SELECT * FROM albumes WHERE id = ?", [id]);
+        if (rows.length === 0) {
+            conn.release();
+            return res.status(404).send("Álbum no encontrado");
+        }
+
+        // Eliminar fotos primero
+        await conn.query("DELETE FROM album_fotos WHERE album_id = ?", [id]);
+
+        // Eliminar el álbum
+        await conn.query("DELETE FROM albumes WHERE id = ?", [id]);
+
+        conn.release();
+        res.send("Álbum eliminado correctamente");
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error al eliminar álbum");
+    }
+});
+
 
 // SPA fallback
 app.get("*", (req, res) => {

@@ -110,6 +110,13 @@
 			<p id="modalText" class="text-base"></p>
 		</div>
 	</div>
+	<!-- Albumes de Fotos -->
+	<section id="albumes" class="p-6 text-center max-w-6xl mx-auto hidden">
+    	<h2 class="text-2xl font-bold mb-4">Álbumes de Fotos</h2>
+    	<div id="albumContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+	</section>
+
+
 	<!-- MAPA -->
 	<section id="mapa" class="p-6 text-center max-w-4xl mx-auto">
 	<h2 class="text-2xl font-bold mb-4">Mapa de Dojos Insaeng en tu ciudad</h2>
@@ -124,7 +131,6 @@
 	</section>
 
 	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 	<!-- ESTADO USUARIO -->
 	<div id="userStatus" class="text-center mt-4 font-semibold"></div>
 	<script>
@@ -409,11 +415,59 @@
 			);
 		}
 
-
 		document.getElementById("ciudad").addEventListener("change", (e) => {
 			mostrarSedes(e.target.value);
 		});
+
+		async function cargarAlbumes() {
+			try {
+				const res = await fetch("/albumes");
+				const data = await res.json();
+				const albumSection = document.getElementById("albumes");
+				const albumContainer = document.getElementById("albumContainer");
+				
+				albumContainer.innerHTML = "";
+				if (data.length === 0) { albumSection.classList.add("hidden"); return; }
+				albumSection.classList.remove("hidden");
+
+				data.forEach(album => {
+					const albumDiv = document.createElement("div");
+					albumDiv.className = "bg-white dark:bg-gray-300 rounded-xl shadow-md p-4 flex flex-col items-center";
+
+					// Título
+					const title = document.createElement("h3");
+					title.textContent = album.nombre;
+					title.className = "font-semibold text-lg mb-2";
+					albumDiv.appendChild(title);
+
+					// Contenedor de fotos
+					const fotosDiv = document.createElement("div");
+					fotosDiv.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
+
+					album.fotos.forEach(link => {
+						const a = document.createElement("a");
+						a.href = link;        // El link ya está limpio
+						a.target = "_blank";
+
+						const img = document.createElement("img");
+						img.src = link;       // Usamos la misma URL como imagen
+						img.className = "w-full h-32 object-cover rounded";
+						a.appendChild(img);
+
+						fotosDiv.appendChild(a);
+					});
+
+					albumDiv.appendChild(fotosDiv);
+					albumContainer.appendChild(albumDiv);
+				});
+			} catch(err) {
+				console.error("Error al cargar álbumes:", err);
+			}
+		}
+
+
 		document.addEventListener("DOMContentLoaded", () => {
+			cargarAlbumes();
 			cargarSedes();
 		});
 	</script>
