@@ -86,24 +86,39 @@
 	</form>
 
 	<!-- ADMIN NEWS -->
-	<div id="adminNews" class="hidden">
-		<h2 class="text-xl font-semibold mb-4">Noticias</h2>
-		<form id="createNewsForm" class="bg-white dark:bg-gray-300 p-6 rounded-2xl shadow-md mb-4">
-			<label class="block mb-2">Título</label>
-			<input type="text" name="title" required class="w-full p-2 border rounded mb-2 dark:bg-gray-200">
-			<label class="block mb-2">Texto</label>
-			<textarea name="text" required class="w-full p-2 border rounded mb-2 dark:bg-gray-200"></textarea>
-			<label class="block mb-2">Imagen URL (opcional)</label>
-			<input type="text" name="imageUrl" class="w-full p-2 border rounded mb-2 dark:bg-gray-200" placeholder="Si no se ingresa o pones '#', se mostrará un color aleatorio">
-			<label class="block mb-2">Tipo</label>
-			<select name="tipo" class="w-full p-2 border rounded mb-2 dark:bg-gray-200">
-				<option value="normal">Noticia normal</option>
-				<option value="importante">Noticia importante</option>
-			</select>
-			<button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700">Guardar</button>
-		</form>
-		<div id="newsList" class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"></div>
+	<div id="adminNews" class="hidden max-w-4xl mx-auto mt-6">
+	<h2 class="text-2xl font-semibold mb-4">Noticias</h2>
+
+	<!-- Caja tipo Facebook -->
+	<form id="createNewsForm" class="bg-white dark:bg-gray-300 p-4 rounded-2xl shadow-md flex flex-col gap-3">
+		<textarea name="text" placeholder="¿Qué está pasando?" required
+		class="w-full h-40 p-3 border rounded-lg dark:bg-gray-200 resize-none text-gray-800"></textarea>
+
+		<!-- Opciones tipo Facebook -->
+		<div class="flex items-center justify-between">
+		<div class="flex gap-2">
+			<button type="button" id="toggleImportant" class="flex items-center px-3 py-1 border rounded-full hover:bg-gray-200 dark:hover:bg-gray-400">
+			<span id="importantIcon" class="text-red-600 text-xl mr-1 opacity-30">❗</span> Importante
+			</button>
+			<button type="button" id="addImageBtn" class="flex items-center px-3 py-1 border rounded-full hover:bg-gray-200 dark:hover:bg-gray-400">
+			📷 Imagen
+			</button>
+			<button type="button" id="addAlbumBtn" class="flex items-center px-3 py-1 border rounded-full hover:bg-gray-200 dark:hover:bg-gray-400">
+			📁 Álbum
+			</button>
 		</div>
+		<button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700">Publicar</button>
+		</div>
+
+		<!-- Inputs dinámicos ocultos -->
+		<input type="text" name="imageUrl" id="imageUrlInput" placeholder="URL de imagen" class="hidden p-2 border rounded-lg dark:bg-gray-200">
+		<input type="text" name="albumLink" id="albumLinkInput" placeholder="Link de álbum" class="hidden p-2 border rounded-lg dark:bg-gray-200">
+	</form>
+
+	<!-- Vista previa de noticias -->
+	<div id="newsList" class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-4"></div>
+	</div>
+
 		<!-- ALBUMES -->
 		<div id="adminAlbumes" class="hidden p-4">
 			<h2 class="text-xl font-bold mb-4">Gestión de Álbumes</h2>
@@ -318,85 +333,160 @@ adminCreateForm.addEventListener("submit", async e=>{
 });
 
 // ============================
-// NOTICIAS
+// NOTICIAS ADMIN - Estilo Facebook
 // ============================
 const newsList = document.getElementById("newsList");
 const createNewsForm = document.getElementById("createNewsForm");
+const toggleImportant = document.getElementById("toggleImportant");
+const importantIcon = document.getElementById("importantIcon");
+const addImageBtn = document.getElementById("addImageBtn");
+const addAlbumBtn = document.getElementById("addAlbumBtn");
+const imageUrlInput = document.getElementById("imageUrlInput");
+const albumLinkInput = document.getElementById("albumLinkInput");
+
 let editId = null;
+let isImportant = false;
+
+// ============================
+// Toggle importante
+toggleImportant.addEventListener("click", () => {
+  isImportant = !isImportant;
+  importantIcon.style.opacity = isImportant ? "1" : "0.3";
+});
+
+// Mostrar/ocultar inputs opcionales
+addImageBtn.addEventListener("click", () => {
+  imageUrlInput.classList.toggle("hidden");
+  imageUrlInput.focus();
+});
+addAlbumBtn.addEventListener("click", () => {
+  albumLinkInput.classList.toggle("hidden");
+  albumLinkInput.focus();
+});
 
 // Color aleatorio
 function randomColor(){ return '#' + Math.floor(Math.random()*16777215).toString(16); }
 
+// ============================
 // Cargar noticias
+//============================
 async function loadNews(){
-	newsList.innerHTML = "";
-	const res = await fetch("/news");
-	const data = await res.json();
+  newsList.innerHTML = "";
+  const res = await fetch("/news");
+  const data = await res.json();
 
-	data.forEach(n=>{
-		const div = document.createElement("div");
-		div.className = `news-card ${n.tipo == 1 ? 'importante':''} bg-white dark:bg-gray-300 p-4 rounded-2xl shadow-md`;
+  data.forEach(n=>{
+    const div = document.createElement("div");
+    div.className = `news-card ${n.tipo==1?'importante':''} bg-white dark:bg-gray-300 p-4 rounded-2xl shadow-md cursor-pointer`;
 
-		const imageContent = (!n.imageUrl || n.imageUrl === "#")
-			? `<div class="mb-2 w-full h-32 rounded" style="background-color:${randomColor()};"></div>`
-			: `<img src="${n.imageUrl}" class="mb-2 w-full h-32 object-cover rounded">`;
+    const imageContent = (!n.imageUrl || n.imageUrl === "#")
+      ? `<div class="mb-2 w-full h-32 rounded" style="background-color:${randomColor()};"></div>`
+      : `<img src="${n.imageUrl}" class="mb-2 w-full h-32 object-cover rounded">`;
 
-		const textPreview = n.text.length > 100 ? n.text.substring(0,100) + "..." : n.text;
+    const textPreview = n.text.length > 100 ? n.text.substring(0,100) + "..." : n.text;
 
-		div.innerHTML = `
-			${imageContent}
-			<h3 class="font-bold text-lg mb-1">${n.title}</h3>
-			<p class="mb-2">${textPreview}</p>
-			<div class="flex space-x-2">
-				<button data-id="${n.id}" class="editBtn bg-blue-600 text-white px-2 py-1 rounded">Editar</button>
-				<button data-id="${n.id}" class="delBtn bg-red-600 text-white px-2 py-1 rounded">Eliminar</button>
-			</div>
-		`;
-		newsList.appendChild(div);
-	});
+	div.innerHTML = `
+	${imageContent}
+	<h3 class="font-bold text-lg mb-1">${n.title}</h3>
+	<p class="mb-2 max-h-24 overflow-y-auto whitespace-pre-line">${n.text}</p>
+	${n.tipo==1?'<span class="text-red-600 font-bold">❗ Importante</span>':''}
+	${n.albumLink?`<a href="${n.albumLink}" target="_blank" class="text-blue-600 underline">Ver álbum</a>`:''}
+	<div class="flex space-x-2 mt-2">
+		<button data-id="${n.id}" class="editBtn bg-blue-600 text-white px-2 py-1 rounded">Editar</button>
+		<button data-id="${n.id}" class="delBtn bg-red-600 text-white px-2 py-1 rounded">Eliminar</button>
+	</div>
+	`;
+    newsList.appendChild(div);
+  });
 }
 
-// Crear/Editar noticia
+// ============================
+// Crear / Editar noticia
+//============================
 createNewsForm.addEventListener("submit", async e=>{
-	e.preventDefault();
-	const imageUrlValue = createNewsForm.imageUrl.value.trim();
-	const tipoNum = createNewsForm.tipo.value === "importante" ? 1 : 0;
-	const payload = {
-		title: createNewsForm.title.value,
-		text: createNewsForm.text.value,
-		tipo: tipoNum,
-		imageUrl: tipoNum == 1 
-				? "https://consejomedicolp.org.ar/wp-content/uploads/2024/02/avisoImportante3.jpg" 
-				: (imageUrlValue === "" || imageUrlValue === "#") ? "#" : imageUrlValue,
-	};
-	let res;
-	if(editId){
-		res = await fetch("/admin/news/"+editId,{ method:"PUT", headers:{ "Content-Type":"application/json","Authorization":"Bearer "+token }, body:JSON.stringify(payload)});
-	} else {
-		res = await fetch("/admin/news",{ method:"POST", headers:{ "Content-Type":"application/json","Authorization":"Bearer "+token }, body:JSON.stringify(payload)});
-	}
-	if(res.ok){ createNewsForm.reset(); editId=null; loadNews(); }
+  e.preventDefault();
+
+  // Separar primera línea como título
+  const fullText = createNewsForm.text.value.trim();
+  const lines = fullText.split("\n");
+  const title = lines.shift();               // primera línea
+  const text = lines.join("\n").trim();      // resto de líneas
+
+  const payload = {
+    title: title || "(Sin título)",
+    text: text || "(Sin descripción)",
+    tipo: isImportant ? 1 : 0,
+    imageUrl: imageUrlInput.value.trim() || "#",
+    albumLink: albumLinkInput.value.trim() || null
+  };
+
+  let res;
+  if(editId){
+    res = await fetch("/admin/news/"+editId,{
+      method:"PUT",
+      headers:{ "Content-Type":"application/json","Authorization":"Bearer "+token },
+      body: JSON.stringify(payload)
+    });
+  } else {
+    res = await fetch("/admin/news",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json","Authorization":"Bearer "+token },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  if(res.ok){
+    createNewsForm.reset();
+    imageUrlInput.classList.add("hidden");
+    albumLinkInput.classList.add("hidden");
+    isImportant = false;
+    importantIcon.style.opacity = "0.3";
+    editId = null;
+    loadNews();
+  }
 });
 
+
+// ============================
+// Edit / Delete
+// ============================
 // Edit/Delete
 newsList.addEventListener("click", async e=>{
-	if(e.target.classList.contains("editBtn")){
-		const id = e.target.dataset.id;
-		const res = await fetch("/news");
-		const data = await res.json();
-		const n = data.find(x=>x.id==id);
-		createNewsForm.title.value = n.title;
-		createNewsForm.text.value = n.text;
-		createNewsForm.imageUrl.value = n.imageUrl;
-		createNewsForm.tipo.value = n.tipo;
-		editId = id;
-	}
-	if(e.target.classList.contains("delBtn")){
-		if(!confirm("Eliminar noticia?")) return;
-		await fetch("/admin/news/"+e.target.dataset.id,{ method:"DELETE", headers:{ "Authorization":"Bearer "+token }});
-		loadNews();
-	}
+  if(e.target.classList.contains("editBtn")){
+    const id = e.target.dataset.id;
+    const res = await fetch("/news");
+    const data = await res.json();
+    const n = data.find(x=>x.id == id);
+
+    // Juntar titulo + descripcion en la misma caja
+    createNewsForm.text.value = `${n.title}\n${n.text || ""}`.trim();
+
+    // Imagen y link
+    imageUrlInput.value = n.imageUrl && n.imageUrl !== "#" ? n.imageUrl : "";
+    albumLinkInput.value = n.albumLink || "";
+
+    // Mostrar inputs si tienen datos
+    if(imageUrlInput.value) imageUrlInput.classList.remove("hidden");
+    if(albumLinkInput.value) albumLinkInput.classList.remove("hidden");
+
+    // Importante
+    isImportant = n.tipo == 1;
+    importantIcon.style.opacity = isImportant ? "1" : "0.3";
+
+    editId = id;
+  }
+
+  if(e.target.classList.contains("delBtn")){
+    if(!confirm("Eliminar noticia?")) return;
+    await fetch("/admin/news/"+e.target.dataset.id,{ 
+      method:"DELETE", 
+      headers:{ "Authorization":"Bearer "+token } 
+    });
+    loadNews();
+  }
 });
+
+
 
 // ============================
 // ROLES
