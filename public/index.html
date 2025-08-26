@@ -1,121 +1,153 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Insaeng - TKD</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>Insaeng - TKD</title>
+	<script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Leaflet CSS (solo una vez) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- (Opcional) geosearch CSS si lo usas -->
-  <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.css"/> -->
+	<!-- Leaflet CSS (solo una vez) -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+	<!-- (Opcional) geosearch CSS si lo usas -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.css"/> -->
 
-  <style>
+	<style>
 	.news-card {
-	  border-radius: 1rem;
-	  overflow: hidden;
-	  transform: scale(1);
-	  transition: transform 0.3s;
-	  flex: 0 0 25%;
-	  min-width: 0;
+		border-radius: 1rem;
+		overflow: hidden; /* lo podés dejar, no afecta al scale */
+		transform: scale(1);
+		transition: transform 0.3s;
+		flex: 0 0 25%;
+		min-width: 0;
+		position: relative; /* importante para que el z-index funcione */
+		z-index: 0; /* estado normal */
 	}
 	.news-card.importante { position: relative; }
 	.news-card.importante::before {
-	  content: "";
-	  position: absolute; inset: 0;
-	  border-radius: 1rem; pointer-events: none; opacity: 0;
-	  transition: opacity 0.3s;
-	  box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8) inset;
+		content: "";
+		position: absolute; inset: 0;
+		border-radius: 1rem; pointer-events: none; opacity: 0;
+		transition: opacity 0.3s;
+		box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8) inset;
+		z-index: 1;
 	}
 	.news-card.importante:hover::before { opacity: 1; }
-	.news-card:hover { transform: scale(1.05); z-index: 10; }
+	.news-card:hover {
+	transform: scale(1.05);
+	z-index: 50; /* se pone encima de las flechas */
+	}
 	#newsContainer::-webkit-scrollbar { display: none; }
-	#newsContainer { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+	#newsContainer {
+	padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	overflow-x: auto;
+	overflow-y: visible; /* <-- permitir que el hover sobresalga */
+	}
+	.neon-red {
+		transition: all 0.3s ease-in-out;
+	}
+	.neon-red:hover {
+		color: #ff1a1a; /* rojo brillante */
+		text-shadow: 0 0 5px #ff1a1a, 0 0 10px #ff1a1a, 0 0 20px #ff1a1a, 0 0 40px #ff1a1a;
+	}
+	</style>
 </head>
 <body class="bg-gray-200 dark:bg-gray-200 text-gray-900 dark:text-gray-900">
 
-  <!-- NAVBAR -->
-  <header class="bg-slate-50 text-white p-1 flex justify-between items-center shadow-md">
+	<!-- NAVBAR -->
+	<header class="bg-slate-50 text-white p-1 flex justify-between items-center shadow-md">
 	<div class="flex items-center space-x-2">
-	  <img src="imgs/logo_whitea.png" alt="Logo" class="h-8 sm:h-20 md:h-25 w-auto">
-	  <h1 class="text-black text-xl font-bold">INSAENG</h1>
+		<img src="imgs/logo_whitea.png" alt="Logo" class="h-8 sm:h-20 md:h-25 w-auto">
+		<h1 class="text-black text-xl font-bold">INSAENG</h1>
 	</div>
 	<nav id="navbar" class="flex space-x-4 text-black px-4">
-	  <a href="#inicio" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Inicio</a>
-	  <a href="cuenta.html" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Cuenta</a>
-	  <a href="#" id="navLoginBtn" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Login</a>
+		<a href="#inicio" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Inicio</a>
+		<a href="cuenta.html" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Cuenta</a>
+		<a href="#" id="navLoginBtn" class="px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors">Login</a>
 	</nav>
-  </header>
+	</header>
 
-  <!-- PRESENTACIÓN -->
-  <section id="inicio" class="p-6 text-center max-w-4xl mx-auto">
+	<!-- PRESENTACIÓN -->
+	<section id="inicio" class="p-6 text-center max-w-4xl mx-auto">
 	<h2 class="text-3xl md:text-4xl font-extrabold mb-4">Escuela de Taekwondo-INSAENG</h2>
 	<p class="text-lg md:text-xl leading-relaxed">
-	  Este texto no se que poner acá, ya se me va a ocurrir algo.
+		Este texto no se que poner acá, ya se me va a ocurrir algo.
 	</p>
-  </section>
-
-  <!-- NOTICIAS -->
-  <div class="relative max-w-6xl mx-auto">
-	<button id="scrollLeft" class="absolute -left-6 top-1/2 transform -translate-y-1/2 bg-cyan-800 text-white p-2 rounded-full z-10 hover:bg-cyan-600">&#8592;</button>
-	<section id="noticias" class="p-6">
-	  <h2 class="text-2xl font-bold mb-4 text-center">Noticias</h2>
-	  <div id="newsContainer" class="flex overflow-x-auto gap-3 py-4 scroll-smooth"></div>
 	</section>
-	<button id="scrollRight" class="absolute -right-6 top-1/2 transform -translate-y-1/2 bg-cyan-800 text-white p-2 rounded-full z-10 hover:bg-cyan-600">&#8594;</button>
-  </div>
 
-  <!-- LOGIN FLOTANTE -->
-  <div id="loginModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
-	<div class="bg-white dark:bg-gray-300 p-6 rounded-2xl shadow-md w-96 relative">
-	  <button onclick="closeLogin()" class="absolute top-2 right-2 text-gray-700 dark:text-gray-900 font-bold">&times;</button>
-	  <h2 class="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
-	  <form id="loginForm" class="space-y-4">
+	<!-- NOTICIAS -->
+	<div id="newsSection" class="relative max-w-6xl mx-auto">
+		<button id="scrollLeft" class="absolute -left-6 top-1/2 transform -translate-y-1/2 text-black p-3 text-3xl font-bold neon-red">⟨</button>
+	<section id="noticias" class="p-6">
+		<h2 class="text-2xl font-bold mb-4 text-center">Noticias</h2>
+		<div id="newsContainer" class="flex overflow-x-auto gap-1 py-4 scroll-smooth"></div>
+	</section>
+		<button id="scrollRight" class="absolute -right-6 top-1/2 transform -translate-y-1/2 text-black p-3 text-3xl font-bold neon-red">⟩</button>
+	</div>
+
+	<!-- LOGIN FLOTANTE -->
+	<div id="loginModal" class="fixed inset-0 bg-stone-950 bg-opacity-75 flex items-center justify-center hidden z-50">
+	<div class="bg-white dark:bg-gray-50 p-6 rounded-2xl shadow-md w-96 relative">
+		<button onclick="closeLogin()" class="absolute top-4 right-4 text-gray-700 dark:text-gray-200 font-bold text-2xl hover:text-red-600">&times;</button>
+		<h2 class="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
+		<form id="loginForm" class="space-y-4">
 		<label class="block">Email</label>
-		<input type="email" name="email" required class="w-full p-2 border rounded dark:bg-gray-400">
+		<input type="email" name="email" required class="w-full p-2 border rounded dark:bg-gray-200">
 		<label class="block">Contraseña</label>
-		<input type="password" name="password" required class="w-full p-2 border rounded dark:bg-gray-400">
-		<button type="submit" class="w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-400">Ingresar</button>
+		<input type="password" name="password" required class="w-full p-2 border rounded dark:bg-gray-200">
+		<button type="submit" class="w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-200">Ingresar</button>
 		<p id="loginMsg" class="text-center mt-3 text-sm"></p>
-	  </form>
+		</form>
 	</div>
-  </div>
-
-  <!-- MODAL DE NOTICIA -->
-  <div id="newsModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
-	<div class="bg-white dark:bg-gray-400 rounded-2xl shadow-md w-1/2 p-6 relative max-h-[80vh] overflow-auto">
-	  <button onclick="closeNewsModal()" class="absolute top-4 right-4 text-gray-700 dark:text-gray-200 font-bold text-2xl hover:text-red-600">&times;</button>
-	  <h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
-	  <img id="modalImage" class="w-full h-64 object-cover rounded mb-4" alt="Noticia" />
-	  <p id="modalText" class="text-base"></p>
 	</div>
-  </div>
 
-  <!-- Albumes de Fotos -->
-  <section id="albumes" class="p-6 text-center max-w-6xl mx-auto hidden">
+	<!-- MODAL DE NOTICIA -->
+	<div id="newsModal" class="fixed inset-0 bg-stone-950 bg-opacity-75 flex items-center justify-center hidden z-50">
+	<div class="bg-white dark:bg-stone-50 rounded-2xl shadow-md w-1/2 p-6 relative max-h-[80vh] overflow-auto">
+		<button onclick="closeNewsModal()" class="absolute top-4 right-4 text-gray-700 dark:text-gray-200 font-bold text-2xl hover:text-red-600">&times;</button>
+		<img id="modalImage" class="w-full h-64 object-cover rounded mb-4" alt="Noticia" />
+		<h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
+		<p id="modalText" class="text-base"></p>
+	</div>
+	</div>
+
+	<!-- Albumes de Fotos -->
+	<section id="albumes" class="p-6 text-center max-w-6xl mx-auto hidden">
 	<h2 class="text-2xl font-bold mb-4">Álbumes de Fotos</h2>
 	<div id="albumContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-  </section>
+	</section>
+	<!-- MODAL DE ALBUM -->
+	<div id="albumModal" class="fixed inset-0 bg-stone-950 bg-opacity-75 flex items-center justify-center hidden z-50">
+	<div class="bg-white dark:bg-stone-50 rounded-2xl shadow-md w-4/5 max-h-[90vh] p-6 overflow-hidden relative">
+		<button onclick="closeAlbumModal()" class="absolute top-4 right-4 text-gray-700 dark:text-gray-200 font-bold text-2xl hover:text-red-600">&times;</button>
+		<h3 id="albumModalTitle" class="text-2xl font-bold mb-4 text-center"></h3>
+		<p id="albumModalDesc" class="text-base mb-4"></p>
 
-  <!-- MAPA -->
-  <section id="mapa" class="p-6 text-center max-w-4xl mx-auto">
+		<button id="albumScrollLeft" class="absolute left-2 top-1/2 transform -translate-y-1/2 text-2xl font-bold text-gray-700 hover:text-red-600 z-20 neon-red">&#x27E8;</button>
+		<div id="albumModalPhotos" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-2 py-2"></div>
+		<button id="albumScrollRight" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-2xl font-bold text-gray-700 hover:text-red-600 z-20 neon-red">&#x27E9;</button>
+	</div>
+	</div>
+
+	<!-- MAPA -->
+	<section id="mapa" class="p-6 text-center max-w-4xl mx-auto">
 	<h2 class="text-2xl font-bold mb-4">Mapa de Dojos Insaeng en tu ciudad</h2>
 	<div class="mb-4">
-	  <label for="ciudad" class="mr-2 font-semibold">Ver sedes en:</label>
-	  <select id="ciudad" class="border rounded p-2"></select>
+		<label for="ciudad" class="mr-2 font-semibold">Ver sedes en:</label>
+		<select id="ciudad" class="border rounded p-2"></select>
 	</div>
 	<div id="map" class="mx-auto rounded shadow-md" style="width:400px; height:400px; margin: auto;"></div>
-  </section>
+	</section>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+	<!-- Leaflet JS -->
+	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- ESTADO USUARIO -->
-  <div id="userStatus" class="text-center mt-4 font-semibold"></div>
+	<!-- ESTADO USUARIO -->
+	<div id="userStatus" class="text-center mt-4 font-semibold"></div>
 
-  <script>
+	<script>
 	// ===== Utilidades =====
 	function randomColor(){ return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, "0"); }
 	function openLogin() { loginModal.classList.remove("hidden"); }
@@ -124,7 +156,7 @@
 	function logout() { localStorage.removeItem("token"); location.reload(); }
 
 	document.addEventListener("keydown", (e) => {
-	  if(e.key === "Escape") { closeLogin(); closeNewsModal(); }
+		if(e.key === "Escape") { closeLogin(); closeNewsModal(); }
 	});
 
 	// ===== Modal Noticias (seguro) =====
@@ -133,18 +165,36 @@
 	const modalImage = document.getElementById("modalImage");
 	const modalText = document.getElementById("modalText");
 
-	function openNewsModal(title, text, imageUrl) {
-	  modalTitle.textContent = title ?? "";
-	  modalText.textContent = text ?? "";
-	  if(!imageUrl || imageUrl === "#"){
+	function openNewsModal(title, text, imageUrl, albumLink) {
+	modalTitle.textContent = title ?? "";
+	modalText.textContent = text ?? "";
+	
+	if (!imageUrl || imageUrl === "#") {
 		modalImage.style.display = "none";
 		modalImage.removeAttribute("src");
-	  } else {
+	} else {
 		modalImage.src = imageUrl;
 		modalImage.style.display = "block";
-	  }
-	  newsModal.classList.remove("hidden");
 	}
+
+	// Botón de álbum
+	let existingBtn = document.getElementById("modalAlbumBtn");
+	if(existingBtn) existingBtn.remove();
+
+	if(albumLink) {
+		const btn = document.createElement("a");
+		btn.id = "modalAlbumBtn";
+		btn.href = albumLink;
+		btn.target = "_blank";
+		btn.rel = "noopener noreferrer";
+		btn.className = "block mt-4 bg-cyan-700 text-white px-3 py-2 rounded hover:bg-cyan-500 text-center";
+		btn.textContent = "Ver álbum completo";
+		newsModal.querySelector("div").appendChild(btn);
+	}
+
+	newsModal.classList.remove("hidden");
+	}
+
 	function closeNewsModal() { newsModal.classList.add("hidden"); }
 
 	// ===== Referencias DOM =====
@@ -159,242 +209,258 @@
 	navLoginBtn.addEventListener("click", openLogin);
 
 	// ===== News Card (sin innerHTML) =====
-	function addNewsCard(title, text, imageUrl, tipo) {
-	  const card = document.createElement("div");
-	  card.className = "news-card bg-white dark:bg-gray-300 shadow-md overflow-hidden p-0";
-	  if (tipo === 1) card.classList.add("importante");
+	function addNewsCard(title, text, imageUrl, tipo, albumLink) {
+		const card = document.createElement("div");
+		card.className = "news-card bg-white dark:bg-gray-200 shadow-md overflow-hidden p-0 flex flex-col";
+		if (tipo === 1) card.classList.add("importante");
 
-	  // Imagen / fondo
-	  let mediaWrapper = document.createElement("div");
-	  mediaWrapper.className = "w-full h-44 overflow-hidden flex items-center justify-center";
+		// Imagen / fondo
+		const mediaWrapper = document.createElement("div");
+		mediaWrapper.className = "w-full h-44 overflow-hidden flex items-center justify-center";
+		if (!imageUrl || imageUrl === "#") {
+			mediaWrapper.style.backgroundColor = randomColor();
+		} else {
+			const img = document.createElement("img");
+			img.src = imageUrl;
+			img.alt = title || "Noticia";
+			img.loading = "lazy";
+			img.className = "object-cover w-full h-full";
+			mediaWrapper.appendChild(img);
+		}
 
-	  if (!imageUrl || imageUrl === "#") {
-		mediaWrapper.style.backgroundColor = randomColor();
-	  } else {
-		const img = document.createElement("img");
-		img.src = imageUrl;
-		img.alt = title || "Noticia";
-		img.loading = "lazy";
-		img.className = "object-cover w-full h-full";
-		mediaWrapper.appendChild(img);
-	  }
+		// Contenido
+		const content = document.createElement("div");
+		content.className = "p-4 flex-1 flex flex-col";
 
-	  const content = document.createElement("div");
-	  content.className = "p-4";
+		const h3 = document.createElement("h3");
+		h3.className = "font-semibold text-lg mb-2";
+		h3.textContent = title ?? "";
 
-	  const h3 = document.createElement("h3");
-	  h3.className = "font-semibold text-lg mb-2";
-	  h3.textContent = title ?? "";
+		const p = document.createElement("p");
+		p.className = "text-sm overflow-y-auto max-h-20"; // scroll si es muy largo
+		p.textContent = text ?? "";
 
-	  const p = document.createElement("p");
-	  p.className = "text-sm line-clamp-3";
-	  p.textContent = text ?? "";
+		content.appendChild(h3);
+		content.appendChild(p);
 
-	  content.appendChild(h3);
-	  content.appendChild(p);
+		// Botón de álbum (si existe)
+		if (albumLink) {
+			const albumBtn = document.createElement("a");
+			albumBtn.href = albumLink;
+			albumBtn.target = "_blank";
+			albumBtn.rel = "noopener noreferrer";
+			albumBtn.className = "mt-auto inline-block bg-cyan-700 text-white text-sm px-2 py-1 rounded hover:bg-cyan-500 self-start";
+			albumBtn.textContent = "Ver álbum";
+			content.appendChild(albumBtn);
+		}
 
-	  card.appendChild(mediaWrapper);
-	  card.appendChild(content);
+		card.appendChild(mediaWrapper);
+		card.appendChild(content);
 
-	  card.addEventListener("click", () => openNewsModal(title, text, imageUrl));
-	  newsContainer.appendChild(card);
+		// Click para abrir modal con info completa
+		card.addEventListener("click", () => openNewsModal(title, text, imageUrl, albumLink));
+		newsContainer.appendChild(card);
 	}
-
 	// ===== Cargar noticias =====
 	async function loadNews() {
-	  try {
+		try {
 		const res = await fetch("/news");
 		const newsListData = await res.json();
 		newsContainer.innerHTML = "";
+			if (!Array.isArray(newsListData) || newsListData.length === 0) {
+				document.getElementById("newsSection").classList.add("hidden");
+				return;
+			}
+			document.getElementById("newsSection").classList.remove("hidden");
 		newsListData.forEach(n => addNewsCard(n.title, n.text, n.imageUrl, n.tipo));
-	  } catch {
+		} catch {
 		newsContainer.textContent = "No se pudieron cargar las noticias.";
 		newsContainer.classList.add("text-center", "text-red-600");
-	  }
+		}
 	}
 
 	// Scroll por card
 	const scrollContainer = document.getElementById("newsContainer");
 	function getCardWidth(){ return scrollContainer.querySelector(".news-card")?.offsetWidth || 300; }
 	document.getElementById("scrollLeft").addEventListener("click", () => {
-	  scrollContainer.scrollBy({ left: -getCardWidth(), behavior: "smooth" });
+		scrollContainer.scrollBy({ left: -getCardWidth(), behavior: "smooth" });
 	});
 	document.getElementById("scrollRight").addEventListener("click", () => {
-	  scrollContainer.scrollBy({ left: getCardWidth(), behavior: "smooth" });
+		scrollContainer.scrollBy({ left: getCardWidth(), behavior: "smooth" });
 	});
 
 	// ===== UI según sesión (solo para mostrar/ocultar) =====
 	function updateUIForLoggedUser(payload) {
-	  loginModal.classList.add("hidden");
-	  navLoginBtn.style.display = "none";
+		loginModal.classList.add("hidden");
+		navLoginBtn.style.display = "none";
 
-	  let sobrenombre = "";
-	  if(payload.nivel >= 11 && payload.nivel <= 13) sobrenombre = "Sabon ";
-	  else if(payload.nivel >= 14 && payload.nivel <= 16) sobrenombre = "Sabon-Nim ";
-	  else if(payload.nivel >= 17 && payload.nivel <= 18) sobrenombre = "Sagium-Nim ";
-	  else if(payload.nivel == 17) sobrenombre = "Sasong-Nim ";
+		let sobrenombre = "";
+		if(payload.nivel >= 11 && payload.nivel <= 13) sobrenombre = "Sabon ";
+		else if(payload.nivel >= 14 && payload.nivel <= 16) sobrenombre = "Sabon-Nim ";
+		else if(payload.nivel >= 17 && payload.nivel <= 18) sobrenombre = "Sagium-Nim ";
+		else if(payload.nivel == 17) sobrenombre = "Sasong-Nim ";
 
-	  userStatus.textContent = `Has iniciado sesión como: ${sobrenombre}${payload.nombre}`;
+		userStatus.textContent = `Has iniciado sesión como: ${sobrenombre}${payload.nombre}`;
 
-	  // quitar botones previos de sesión
-	  document.querySelectorAll("#navbar .sessionBtn").forEach(el => el.remove());
+		// quitar botones previos de sesión
+		document.querySelectorAll("#navbar .sessionBtn").forEach(el => el.remove());
 
-	  const actionBtn = document.createElement("a");
-	  actionBtn.className = "sessionBtn px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors";
+		const actionBtn = document.createElement("a");
+		actionBtn.className = "sessionBtn px-2 py-1 rounded hover:bg-cyan-800 hover:text-white hover:no-underline transition-colors";
 
-	  if(payload.nivel >= 11) {
+		if(payload.nivel >= 11) {
 		actionBtn.href = "admin.html";
 		actionBtn.textContent = "Admin";
-	  } else {
+		} else {
 		actionBtn.href = "#";
 		actionBtn.textContent = "Logout";
 		actionBtn.addEventListener("click", logout);
-	  }
-	  navbar.appendChild(actionBtn);
+		}
+		navbar.appendChild(actionBtn);
 	}
 
 	// Cargar token (con check de expiración para UI)
 	(function bootstrapAuthUI(){
-	  const token = localStorage.getItem("token");
-	  if(!token) return;
-	  try {
+		const token = localStorage.getItem("token");
+		if(!token) return;
+		try {
 		const payload = JSON.parse(atob(token.split(".")[1]));
 		if (payload?.exp && Date.now()/1000 > payload.exp) {
-		  localStorage.removeItem("token");
-		  return;
+			localStorage.removeItem("token");
+			return;
 		}
 		updateUIForLoggedUser(payload);
-	  } catch {
+		} catch {
 		localStorage.removeItem("token");
-	  }
+		}
 	})();
 
 	// ===== Login =====
 	loginForm.addEventListener("submit", async e => {
-	  e.preventDefault();
-	  const email = loginForm.email.value;
-	  const password = loginForm.password.value;
+		e.preventDefault();
+		const email = loginForm.email.value;
+		const password = loginForm.password.value;
 
-	  try {
+		try {
 		const res = await fetch("/login", {
-		  method: "POST",
-		  headers: { "Content-Type": "application/json" },
-		  body: JSON.stringify({ email, password })
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ email, password })
 		});
 		const result = await res.json();
 
 		if(res.ok) {
-		  setToken(result.token);
-		  const payload = JSON.parse(atob(result.token.split(".")[1]));
-		  updateUIForLoggedUser(payload);
-		  loginMsg.textContent = "";
+			setToken(result.token);
+			const payload = JSON.parse(atob(result.token.split(".")[1]));
+			updateUIForLoggedUser(payload);
+			loginMsg.textContent = "";
 		} else {
-		  loginMsg.textContent = typeof result === "string" ? result : (result?.message || "Error de login");
-		  loginMsg.className = "text-red-600 text-center mt-3 text-sm";
+			loginMsg.textContent = typeof result === "string" ? result : (result?.message || "Error de login");
+			loginMsg.className = "text-red-600 text-center mt-3 text-sm";
 		}
-	  } catch {
+		} catch {
 		loginMsg.textContent = "Error de conexión.";
 		loginMsg.className = "text-red-600 text-center mt-3 text-sm";
-	  }
+		}
 	});
 
 	// ===== Mapa =====
 	const oberaCoords = [-27.485238, -55.120191];
 	const map = L.map('map', {
-	  center: oberaCoords, zoom: 13,
-	  dragging: true, scrollWheelZoom: true,
-	  doubleClickZoom: false, boxZoom: false, zoomControl: true
+		center: oberaCoords, zoom: 13,
+		dragging: true, scrollWheelZoom: true,
+		doubleClickZoom: false, boxZoom: false, zoomControl: true
 	});
 	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	  attribution: '&copy; OpenStreetMap contributors'
+		attribution: '&copy; OpenStreetMap contributors'
 	}).addTo(map);
 
 	let lugares = [];
 	const markerLayer = L.layerGroup().addTo(map);
 
 	async function cargarSedes() {
-	  try {
+		try {
 		const res = await fetch("/sedes");
 		const data = await res.json();
 
 		lugares = data.map(s => ({
-		  name: s.nombre,
-		  coords: [parseFloat(s.lat), parseFloat(s.lng)],
-		  description: (s.descripcion || "").replace(/\n/g, "<br>"),
-		  ciudad: s.ciudad
+			name: s.nombre,
+			coords: [parseFloat(s.lat), parseFloat(s.lng)],
+			description: (s.descripcion || "").replace(/\n/g, "<br>"),
+			ciudad: s.ciudad
 		}));
 
 		const ciudadesUnicas = [...new Set(lugares.map(l => l.ciudad))].sort();
 		const ciudadSelect = document.getElementById("ciudad");
 		ciudadSelect.innerHTML = "";
 		ciudadesUnicas.forEach(ciudad => {
-		  const opt = document.createElement("option");
-		  opt.value = ciudad;
-		  opt.textContent = ciudad;
-		  ciudadSelect.appendChild(opt);
+			const opt = document.createElement("option");
+			opt.value = ciudad;
+			opt.textContent = ciudad;
+			ciudadSelect.appendChild(opt);
 		});
 
 		if (ciudadesUnicas.includes("Oberá")) {
-		  ciudadSelect.value = "Oberá";
-		  mostrarSedes("Oberá");
+			ciudadSelect.value = "Oberá";
+			mostrarSedes("Oberá");
 		} else if (ciudadesUnicas[0]) {
-		  mostrarSedes(ciudadesUnicas[0]);
+			mostrarSedes(ciudadesUnicas[0]);
 		}
 
 		detectarUbicacion();
-	  } catch (err) {
+		} catch (err) {
 		console.error("Error al cargar sedes:", err);
-	  }
+		}
 	}
 
 	function mostrarSedes(ciudad) {
-	  markerLayer.clearLayers();
-	  const ciudadNormalized = (ciudad || "").trim().toLowerCase();
-	  const sedes = lugares.filter(l => (l.ciudad || "").trim().toLowerCase() === ciudadNormalized);
-	  if (sedes.length === 0) return;
+		markerLayer.clearLayers();
+		const ciudadNormalized = (ciudad || "").trim().toLowerCase();
+		const sedes = lugares.filter(l => (l.ciudad || "").trim().toLowerCase() === ciudadNormalized);
+		if (sedes.length === 0) return;
 
-	  sedes.forEach(lugar => {
+		sedes.forEach(lugar => {
 		L.marker(lugar.coords)
-		  .addTo(markerLayer)
-		  .bindPopup(
+			.addTo(markerLayer)
+			.bindPopup(
 			`<strong>${(lugar.name||"").replace(/[<>&]/g, s=>({ '<':'&lt;','>':'&gt;','&':'&amp;' }[s]))}</strong><br>${lugar.description}<br>
 			<a href="https://www.google.com/maps?q=${lugar.coords[0]},${lugar.coords[1]}" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a>`
-		  );
-	  });
-	  map.setView(sedes[0].coords, 13);
+			);
+		});
+		map.setView(sedes[0].coords, 13);
 	}
 
 	function detectarUbicacion() {
-	  if (!navigator.geolocation) return;
-	  navigator.geolocation.getCurrentPosition(
+		if (!navigator.geolocation) return;
+		navigator.geolocation.getCurrentPosition(
 		(position) => {
-		  const lat = position.coords.latitude;
-		  const lon = position.coords.longitude;
+			const lat = position.coords.latitude;
+			const lon = position.coords.longitude;
 
-		  let ciudadDetectada = null;
-		  let minDist = Infinity;
+			let ciudadDetectada = null;
+			let minDist = Infinity;
 
-		  lugares.forEach(l => {
+			lugares.forEach(l => {
 			const dist = Math.hypot(lat - l.coords[0], lon - l.coords[1]);
 			if (dist < minDist) { minDist = dist; ciudadDetectada = l.ciudad; }
-		  });
+			});
 
-		  if (ciudadDetectada && minDist <= 0.1) {
+			if (ciudadDetectada && minDist <= 0.1) {
 			document.getElementById("ciudad").value = ciudadDetectada;
 			mostrarSedes(ciudadDetectada);
-		  }
+			}
 		},
 		(err) => { console.warn("Geolocalización no permitida:", err); }
-	  );
+		);
 	}
 
 	document.getElementById("ciudad").addEventListener("change", (e) => {
-	  mostrarSedes(e.target.value);
+		mostrarSedes(e.target.value);
 	});
 
 	// ===== Álbumes (con rel noopener y alt/lazy) =====
 	async function cargarAlbumes() {
-	  try {
+		try {
 		const res = await fetch("/albumes");
 		const data = await res.json();
 		const albumSection = document.getElementById("albumes");
@@ -402,24 +468,72 @@
 
 		albumContainer.innerHTML = "";
 		if (!Array.isArray(data) || data.length === 0) {
-		  albumSection.classList.add("hidden");
-		  return;
+			albumSection.classList.add("hidden");
+			return;
 		}
 		albumSection.classList.remove("hidden");
 
 		data.forEach(album => {
-		  const albumDiv = document.createElement("div");
-		  albumDiv.className = "bg-white dark:bg-gray-300 rounded-xl shadow-md p-4 flex flex-col items-center";
+		const albumDiv = document.createElement("div");
+		albumDiv.className = "bg-white dark:bg-gray-300 rounded-xl shadow-md p-4 flex flex-col items-center";
 
-		  const title = document.createElement("h3");
-		  title.textContent = album.nombre || "Álbum";
-		  title.className = "font-semibold text-lg mb-2";
-		  albumDiv.appendChild(title);
+		const title = document.createElement("h3");
+		title.textContent = album.nombre || "Álbum";
+		title.className = "font-semibold text-lg mb-2";
+		albumDiv.appendChild(title);
 
-		  const fotosDiv = document.createElement("div");
-		  fotosDiv.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
+		const fotosDiv = document.createElement("div");
+		fotosDiv.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
 
-		  (album.fotos || []).forEach(link => {
+		(album.fotos || []).forEach((link, i) => {
+			if (i > 3) return; // no mostramos más de 4 miniaturas
+			const a = document.createElement("a");
+			a.href = link;
+			a.target = "_blank";
+			a.rel = "noopener noreferrer";
+			a.className = "relative block"; // necesario para overlay
+
+			const img = document.createElement("img");
+			img.src = link;
+			img.alt = (album.nombre || "Álbum") + " foto";
+			img.loading = "lazy";
+			img.className = "w-full h-32 object-cover rounded";
+			a.appendChild(img);
+
+			// Overlay +N solo en la cuarta foto si hay más de 4
+			if (i === 3 && album.fotos.length > 4) {
+			const overlay = document.createElement("div");
+			overlay.className =
+				"absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center text-white font-bold text-xl rounded";
+			overlay.textContent = `+${album.fotos.length - 4}`;
+			a.appendChild(overlay);
+			}
+
+			fotosDiv.appendChild(a); // siempre agregamos la miniatura
+		});
+
+		albumDiv.appendChild(fotosDiv);
+		albumContainer.appendChild(albumDiv);
+		albumDiv.addEventListener("click", () => openAlbumModal(album));
+		});
+		} catch(err) {
+		console.error("Error al cargar álbumes:", err);
+		}
+	}
+
+	const albumModal = document.getElementById("albumModal");
+	const albumModalTitle = document.getElementById("albumModalTitle");
+	const albumModalDesc = document.getElementById("albumModalDesc");
+	const albumModalPhotos = document.getElementById("albumModalPhotos");
+	const scrollLeftBtn = document.getElementById("albumScrollLeft");
+	const scrollRightBtn = document.getElementById("albumScrollRight");
+
+	function openAlbumModal(album) {
+		albumModalTitle.textContent = album.nombre || "Álbum";
+		albumModalDesc.textContent = album.descripcion || "";
+		albumModalPhotos.innerHTML = "";
+
+		(album.fotos || []).forEach(link => {
 			const a = document.createElement("a");
 			a.href = link;
 			a.target = "_blank";
@@ -429,29 +543,43 @@
 			img.src = link;
 			img.alt = (album.nombre || "Álbum") + " foto";
 			img.loading = "lazy";
-			img.className = "w-full h-32 object-cover rounded";
+			img.className = "w-full h-48 object-contain rounded bg-gray-100"; 
 			a.appendChild(img);
 
-			fotosDiv.appendChild(a);
-		  });
-
-		  albumDiv.appendChild(fotosDiv);
-		  albumContainer.appendChild(albumDiv);
+			albumModalPhotos.appendChild(a);
 		});
-	  } catch(err) {
-		console.error("Error al cargar álbumes:", err);
-	  }
+
+		albumModal.classList.remove("hidden");
 	}
+
+	// Cerrar modal
+	function closeAlbumModal() {
+		albumModal.classList.add("hidden");
+	}
+
+	// Scroll horizontal
+	function getAlbumCardWidth() {
+		return albumModalPhotos.querySelector("a")?.offsetWidth || 200;
+	}
+
+	scrollLeftBtn.addEventListener("click", () => {
+		albumModalPhotos.scrollBy({ left: -getAlbumCardWidth(), behavior: "smooth" });
+	});
+
+	scrollRightBtn.addEventListener("click", () => {
+		albumModalPhotos.scrollBy({ left: getAlbumCardWidth(), behavior: "smooth" });
+	});
+
 
 	// ===== Bootstrap =====
 	document.addEventListener("DOMContentLoaded", () => {
-	  loadNews();
-	  cargarAlbumes();
-	  cargarSedes();
+		loadNews();
+		cargarAlbumes();
+		cargarSedes();
 	});
-  </script>
+	</script>
 </body>
 <footer class="bg-cyan-800 text-white py-1 mt-10">
-  <p class="text-center">Página oficial Escuela de Taekwondo Insaeng / © Developed by Insaeng Team</p>
+	<p class="text-center">Página oficial Escuela de Taekwondo Insaeng / © Developed by Insaeng Team</p>
 </footer>
 </html>

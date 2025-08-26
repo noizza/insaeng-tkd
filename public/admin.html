@@ -248,6 +248,9 @@
 </main>
 
 <script>
+// ============================
+// TOKEN Y ACCESO
+// ============================
 const token = localStorage.getItem("token");
 if (!token) { alert("Debes iniciar sesión como administrador."); window.location.href = "/index.html"; }
 
@@ -259,7 +262,9 @@ if(payload.nivel == 20){
 	document.getElementById("btnAddSede").classList.remove("hidden");
 }
 
-// Ejecutar al cargar la página
+// ============================
+// DOM - PAGINA CARGADA
+// ============================
 window.addEventListener("DOMContentLoaded", () => {
 	// Mostrar dashboard
 	dashboard.classList.remove("hidden");
@@ -273,12 +278,15 @@ window.addEventListener("DOMContentLoaded", () => {
 	loadDashboard();
 });
 
-// MENU
+// ============================
+// MENU IZQUIERDO
+// ============================
 const dashboard = document.getElementById("dashboard");
 const adminCreateForm = document.getElementById("adminCreateForm");
 const adminNews = document.getElementById("adminNews");
 const adminRoles = document.getElementById("adminRoles");
 const adminSedes = document.getElementById("adminSedes");
+const adminAlbumes = document.getElementById("adminAlbumes");
 document.getElementById("dashboardBtn").onclick = async () => { dashboard.classList.remove("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.add("hidden");await loadDashboard(); };
 document.getElementById("createUserBtn").onclick = async ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.remove("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.add("hidden"); await loadRolesOptions(); };
 document.getElementById("adminNewsBtn").onclick = ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.remove("hidden"); adminRoles.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.add("hidden"); loadNews(); };
@@ -286,7 +294,9 @@ document.getElementById("btnAlbumes").onclick = ()=>{ dashboard.classList.add("h
 document.getElementById("adminRolesBtn").onclick = async ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.add("hidden"); adminSedes.classList.add("hidden"); adminAlbumes.classList.add("hidden"); adminRoles.classList.remove("hidden"); await loadRoles(); };
 document.getElementById("btnAddSede").onclick = ()=>{ dashboard.classList.add("hidden"); adminCreateForm.classList.add("hidden"); adminNews.classList.add("hidden"); adminRoles.classList.add("hidden"); adminAlbumes.classList.add("hidden"); adminSedes.classList.remove("hidden"); loadSedes(); };
 
-// CREAR USUARIO
+// ============================
+// USUARIOS
+// ============================
 const adminCreateMsg = document.getElementById("adminCreateMsg");
 adminCreateForm.addEventListener("submit", async e=>{
 	e.preventDefault();
@@ -307,7 +317,9 @@ adminCreateForm.addEventListener("submit", async e=>{
 	if(res.ok) adminCreateForm.reset();
 });
 
-// FUNCIONES PARA NOTICIAS
+// ============================
+// NOTICIAS
+// ============================
 const newsList = document.getElementById("newsList");
 const createNewsForm = document.getElementById("createNewsForm");
 let editId = null;
@@ -386,9 +398,9 @@ newsList.addEventListener("click", async e=>{
 	}
 });
 
-//ADMINISTRAR ROLES
-
-// Crear rol
+// ============================
+// ROLES
+// ============================
 const roleMsg = document.getElementById("roleMsg");
 const createRoleForm = document.getElementById("createRoleForm");
 const roleList = document.getElementById("roleList");
@@ -545,7 +557,9 @@ async function loadRolesOptions() {
 	}
 }
 
-//------------Dashboard admin
+// ============================
+// DASHBOARD
+// ============================
 function openEditHijoModal(hijo) {
 	document.getElementById("editHijoId").value = hijo.id;
 	document.getElementById("editHijoNombre").value = hijo.nombre;
@@ -717,7 +731,7 @@ async function loadDashboard() {
 
 }
 
-// Abrir modal de notas
+//============= MODAL DE NOTAS/HIJOS ======================
 let notasHijo = [];
 let categoriaIndex = 0;
 let notasHijoId = null;
@@ -880,7 +894,9 @@ document.getElementById("guardarNotasBtn").addEventListener("click", async () =>
 	else alert(await res.text());
 });
 
-//Sedes/Mapas Form
+// ============================
+// SEDES Y MAPA
+// ============================
 const sedesList = document.getElementById("sedesList");
 const sedeForm = document.getElementById("sedeForm");
 const sedeIdInput = document.getElementById("sedeId");
@@ -991,8 +1007,9 @@ cancelSedeBtn.onclick = () => {
 	sedeDescripcionInput.value = "";
 };
 
-// ---- Albumes ----
-const adminAlbumes = document.getElementById("adminAlbumes");
+// ============================
+// ALBUMES
+// ============================
 const albumesList = document.getElementById("albumesList");
 const albumForm = document.getElementById("albumForm");
 const albumIdInput = document.getElementById("albumId");
